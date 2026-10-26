@@ -156,7 +156,7 @@ public class FaqGenerateService {
         if (h.contains("terminat") || h.contains("cancellat")) return Topic.TERMINATION;
         if (h.contains("payment") || h.contains("invoic")) return Topic.PAYMENT;
         if (h.contains("fee") || h.contains("pricing") || h.contains("cost")) return Topic.FEES;
-        if (h.contains("responsibilit") || h.contains("obligation")) return Topic.RESPONSIBILITIES;
+        if (h.contains("responsibilit") || h.contains("obligation")) return responsibilityTopic(h);
         if (h.contains("ownership") || h.contains("intellectual property")) return Topic.OWNERSHIP;
         if (h.contains("confidential")) return Topic.CONFIDENTIALITY;
         if (h.contains("scope") || h.contains("service")) return Topic.SERVICES;
@@ -178,7 +178,7 @@ public class FaqGenerateService {
                 || q.contains("invoice") || q.contains("how are payments")) return Topic.PAYMENT;
         if (q.contains("fee") || q.contains("pricing") || q.contains("price")
                 || q.contains("cost")) return Topic.FEES;
-        if (q.contains("responsibilit") || q.contains("obligation")) return Topic.RESPONSIBILITIES;
+        if (q.contains("responsibilit") || q.contains("obligation")) return responsibilityTopic(q);
         if (q.contains("ownership") || q.contains("owns the work") || q.contains("deliverables"))
             return Topic.OWNERSHIP;
         if (q.contains("confidential")) return Topic.CONFIDENTIALITY;
@@ -192,6 +192,14 @@ public class FaqGenerateService {
         if (q.contains("experience")) return Topic.EXPERIENCE;
         if (q.contains("education")) return Topic.EDUCATION;
         return Topic.OTHER;
+    }
+
+    private static Topic responsibilityTopic(String text) {
+        // Separate parties so an explicit or generated client FAQ cannot hide
+        // the provider's distinct obligations (and vice versa).
+        if (text.contains("client") && !text.contains("provider")) return Topic.CLIENT_RESPONSIBILITIES;
+        if (text.contains("provider") && !text.contains("client")) return Topic.PROVIDER_RESPONSIBILITIES;
+        return Topic.RESPONSIBILITIES;
     }
 
     private static String questionFor(String heading) {
@@ -231,6 +239,7 @@ public class FaqGenerateService {
 
     private enum Topic {
         SERVICES, TERM, FEES, PAYMENT, TERMINATION, RESPONSIBILITIES,
+        CLIENT_RESPONSIBILITIES, PROVIDER_RESPONSIBILITIES,
         OWNERSHIP, CONFIDENTIALITY, SUMMARY, SKILLS, EXPERIENCE, EDUCATION, OTHER
     }
 

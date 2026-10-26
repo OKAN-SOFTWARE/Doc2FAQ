@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 public class FaqDraftService {
     private static final int MAX_CHARACTERS = 50_000;
     private static final int MAX_ITEMS = 30;
-    private static final Pattern QUESTION = Pattern.compile(
-            "^(?:#{1,6}\\s+|(?:Q|Question):\\s*)(.+\\?)\\s*$",
+    private static final Pattern QUESTION_PREFIX = Pattern.compile(
+            "^(?:#{1,6}\\s+|(?:Q|Question):\\s*)",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern ANSWER_PREFIX = Pattern.compile(
             "^(?:A|Answer):\\s*", Pattern.CASE_INSENSITIVE);
@@ -42,10 +42,10 @@ public class FaqDraftService {
 
         for (String rawLine : content.split("\\R", -1)) {
             String line = rawLine.strip();
-            Matcher match = QUESTION.matcher(line);
-            if (match.matches()) {
+            String nextQuestion = questionFrom(line);
+            if (nextQuestion != null) {
                 addIfValid(items, seen, question, answer);
-                question = match.group(1).strip();
+                question = nextQuestion;
                 answer.setLength(0);
                 continue;
             }
@@ -72,6 +72,16 @@ public class FaqDraftService {
 
         addIfValid(items, seen, question, answer);
         return new PreviewResponse(List.copyOf(items), items.size(), NOTICE);
+    }
+
+    private static String questionFrom(String line) {
+        if (!line.endsWith("?")) return null;
+        // Match only the prefix: overlapping whitespace and question captures can
+        // otherwise backtrack quadratically on a long line without a question mark.
+        Matcher prefix = QUESTION_PREFIX.matcher(line);
+        if (!prefix.find()) return null;
+        String question = line.substring(prefix.end()).strip();
+        return question.length() > 1 ? question : null;
     }
 
     private static void addIfValid(List<FaqItem> items, Set<String> seen,

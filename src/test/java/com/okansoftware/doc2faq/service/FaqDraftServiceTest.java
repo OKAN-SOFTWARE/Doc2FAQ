@@ -1,6 +1,7 @@
 package com.okansoftware.doc2faq.service;
 
 import com.okansoftware.doc2faq.model.PreviewResponse;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -86,5 +87,39 @@ class FaqDraftServiceTest {
                     .append("Answer ").append(i).append(".\n\n");
         }
         assertEquals(30, service.preview(input.toString()).count());
+    }
+
+    @Test
+    void handlesLongWhitespacePrefixesWithoutExcessiveBacktracking() {
+        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
+            for (String prefix : new String[]{"Q:", "Question:", "######"}) {
+                String whitespace = " ".repeat(49_900);
+                assertEquals(0, service.preview(prefix + whitespace + "x").count());
+                PreviewResponse result = service.preview(prefix + whitespace + "Why?\nA: Yes.");
+                assertEquals(1, result.count());
+                assertEquals("Why?", result.items().getFirst().question());
+            }
+        });
+    }
+
+    @Test
+    void preservesSupportedQuestionPrefixesAndRejectsUnrelatedLines() {
+        PreviewResponse result = service.preview("""
+                q:Why now?
+                A: Today.
+                qUeStIoN:\tWhere next?
+                A: Fairfax.
+                ######\tWho decides?
+                A: The team.
+                # Unrelated heading
+                ####### Invalid heading?
+                Ignored answer.
+                An ordinary question?
+                Ignored answer.
+                """);
+        assertEquals(3, result.count());
+        assertEquals("Why now?", result.items().get(0).question());
+        assertEquals("Where next?", result.items().get(1).question());
+        assertEquals("Who decides?", result.items().get(2).question());
     }
 }
