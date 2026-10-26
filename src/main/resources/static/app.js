@@ -1,7 +1,8 @@
 "use strict";
 
-const MAX_CHARS = 20_000;
-const MAX_FILE_BYTES = 80_000;
+const MAX_CHARS = 50_000;
+const MAX_TEXT_FILE_BYTES = 256_000;
+const MAX_UPLOAD_FILE_BYTES = 5 * 1024 * 1024;
 const example = [
   "## What is Doc2FAQ?",
   "Doc2FAQ extracts explicit questions and answers from Markdown or plain text.",
@@ -13,7 +14,7 @@ const example = [
   "A: Yes. Inspect the generated draft, search it, and export only when ready.",
   "",
   "## What formats are supported?",
-  "Text and Markdown files are supported in this version. PDF and Word are planned."
+  "Text, Markdown, PDF, and DOCX files are supported in this version."
 ].join("\n");
 
 const $ = (id) => document.getElementById(id);
@@ -33,7 +34,7 @@ function setStatus(message, kind = "") {
 }
 
 function updateCount() {
-  $("char-count").textContent = source.value.length.toLocaleString() + " / 20,000 characters";
+  $("char-count").textContent = source.value.length.toLocaleString() + " / 50,000 characters";
 }
 
 function render() {
@@ -77,39 +78,84 @@ function markdown() {
     "## " + item.question + "\n\n" + item.answer).join("\n\n") + "\n";
 }
 
-source.addEventListener("input", updateCount);
+function clearDraft() {
+  items = [];
+  search.value = "";
+  search.disabled = true;
+  copy.disabled = true;
+  download.disabled = true;
+  render();
+}
+
+source.addEventListener("input", () => {
+  updateCount();
+  clearDraft();
+});
 search.addEventListener("input", render);
 
 $("sample-btn").addEventListener("click", () => {
   source.value = example;
   updateCount();
+  clearDraft();
   source.focus();
   setStatus("Example loaded. Choose “Create FAQ draft” to preview it.");
 });
 
 $("file-input").addEventListener("change", async (event) => {
-  const file = event.target.files?.[0];
+  const input = event.target;
+  const file = input.files?.[0];
   if (!file) return;
-  event.target.value = "";
-  if (!/\.(txt|md)$/i.test(file.name)) {
-    setStatus("Choose a .txt or .md file for this preview.", "error");
+  input.value = "";
+  const isText = /\.(txt|md)$/i.test(file.name);
+  const isDocument = /\.(pdf|docx)$/i.test(file.name);
+  if (!isText && !isDocument) {
+    setStatus("Choose a .txt, .md, .pdf, or .docx file.", "error");
     return;
   }
-  if (file.size > MAX_FILE_BYTES) {
-    setStatus("File is too large. The text limit is 20,000 characters.", "error");
+  if (file.size === 0) {
+    setStatus("The selected file is empty.", "error");
     return;
   }
+  if (file.size > (isText ? MAX_TEXT_FILE_BYTES : MAX_UPLOAD_FILE_BYTES)) {
+    setStatus(isText
+      ? "Text file is too large. The limit is 256 KB."
+      : "PDF and DOCX files must not exceed 5 MB.", "error");
+    return;
+  }
+
+  input.disabled = true;
+  setStatus(isText ? "Reading text file…" : "Extracting document text on this server…");
   try {
-    const text = await file.text();
+    let text;
+    if (isText) {
+      text = await file.text();
+    } else {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/documents/extract", {
+        method: "POST",
+        body
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || "Could not read this document.");
+      }
+      text = data.text;
+    }
+    if (typeof text !== "string" || !text.trim()) {
+      throw new Error("No usable text found. Scanned PDFs need OCR.");
+    }
     if (text.length > MAX_CHARS) {
-      setStatus("Document text exceeds the 20,000-character limit.", "error");
-      return;
+      throw new Error("Extracted text exceeds 50,000 characters.");
     }
     source.value = text;
     updateCount();
-    setStatus("Loaded " + file.name + ". Review the text before creating your draft.");
-  } catch {
-    setStatus("Could not read the selected file.", "error");
+    clearDraft();
+    setStatus("Loaded " + file.name + ". Review the extracted text, then create your FAQ draft.", "success");
+  } catch (error) {
+    setStatus(error.message || "Could not read the selected file.", "error");
+  } finally {
+    input.disabled = false;
   }
 });
 
@@ -121,7 +167,7 @@ generate.addEventListener("click", async () => {
     return;
   }
   if (content.length > MAX_CHARS) {
-    setStatus("Document text exceeds the 20,000-character limit.", "error");
+    setStatus("Document text exceeds the 50,000-character limit.", "error");
     return;
   }
 

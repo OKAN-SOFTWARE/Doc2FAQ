@@ -1,6 +1,8 @@
 package com.okansoftware.doc2faq.api;
 
+import com.okansoftware.doc2faq.service.DocumentException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,6 +26,24 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> malformedJson() {
         return ResponseEntity.badRequest()
                 .body(new ApiError("INVALID_JSON", "Provide a JSON object containing document text"));
+    }
+
+    @ExceptionHandler(DocumentException.class)
+    public ResponseEntity<ApiError> documentError(DocumentException exception) {
+        HttpStatus status = switch (exception.code()) {
+            case "FILE_TOO_LARGE" -> HttpStatus.PAYLOAD_TOO_LARGE;
+            case "UNSUPPORTED_FORMAT" -> HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+            case "UNREADABLE_DOCUMENT" -> HttpStatus.UNPROCESSABLE_ENTITY;
+            default -> HttpStatus.BAD_REQUEST;
+        };
+        return ResponseEntity.status(status)
+                .body(new ApiError(exception.code(), exception.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> tooLarge() {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(new ApiError("FILE_TOO_LARGE", "Maximum document size is 5 MB"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

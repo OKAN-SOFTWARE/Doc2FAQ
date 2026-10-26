@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -56,6 +58,24 @@ class ApiIntegrationTest {
                         .content("{\"content\":\"\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_INPUT"));
+    }
+
+    @Test
+    void documentUploadRejectsUnsupportedFormat() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "sample.exe", "application/octet-stream", new byte[]{1, 2, 3});
+        mvc.perform(multipart("/api/documents/extract").file(file))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.code").value("UNSUPPORTED_FORMAT"));
+    }
+
+    @Test
+    void documentUploadRejectsFakePdf() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "sample.pdf", "application/pdf", "fake".getBytes());
+        mvc.perform(multipart("/api/documents/extract").file(file))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("UNREADABLE_DOCUMENT"));
     }
 
     @Test

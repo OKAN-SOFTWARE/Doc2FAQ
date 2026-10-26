@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FaqDraftService {
-    private static final int MAX_CHARACTERS = 20_000;
+    private static final int MAX_CHARACTERS = 50_000;
     private static final int MAX_ITEMS = 30;
     private static final Pattern QUESTION = Pattern.compile(
             "^(?:#{1,6}\\s+|(?:Q|Question):\\s*)(.+\\?)\\s*$",
@@ -32,7 +32,7 @@ public class FaqDraftService {
             throw new IllegalArgumentException("Document text is required");
         }
         if (content.length() > MAX_CHARACTERS) {
-            throw new IllegalArgumentException("Document text must not exceed 20,000 characters");
+            throw new IllegalArgumentException("Document text must not exceed 50,000 characters");
         }
 
         List<FaqItem> items = new ArrayList<>();
