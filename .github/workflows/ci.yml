@@ -20,3 +20,6 @@ jobs:
           cache: maven
       - name: Build and test
         run: mvn -B -ntp verify
+
+      - name: Test browser export safety
+        run: node --test src/test/js/*.test.cjs

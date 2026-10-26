@@ -52,6 +52,33 @@ class ApiIntegrationTest {
     }
 
     @Test
+    void generateCreatesSourceGroundedDraft() throws Exception {
+        mvc.perform(post("/api/faqs/generate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"content":"## Services\\nWebsite monitoring and software maintenance."}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1))
+                .andExpect(jsonPath("$.items[0].question").value("What services are included?"))
+                .andExpect(jsonPath("$.items[0].answer").value("Website monitoring and software maintenance."))
+                .andExpect(jsonPath("$.notice").value(
+                        org.hamcrest.Matchers.containsString("No AI service")));
+    }
+
+    @Test
+    void bothEndpointsRejectTextOverFiftyThousandCharacters() throws Exception {
+        String body = "{\"content\":\"" + "x".repeat(50_001) + "\"}";
+        for (String endpoint : new String[]{"/api/faqs/preview", "/api/faqs/generate"}) {
+            mvc.perform(post(endpoint)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_INPUT"));
+        }
+    }
+
+    @Test
     void invalidInputReturnsClearError() throws Exception {
         mvc.perform(post("/api/faqs/preview")
                         .contentType(MediaType.APPLICATION_JSON)

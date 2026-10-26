@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0c1423">
-  <meta name="description" content="Doc2FAQ turns explicit document Q&A into a searchable, reviewable FAQ draft.">
+  <meta name="description" content="Doc2FAQ extracts existing Q&A or builds source-grounded FAQ suggestions from TXT, Markdown, PDF, and DOCX. Review, edit, and export.">
   <title>Doc2FAQ — Clear answers start here</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
@@ -22,9 +22,9 @@
     <main>
       <section class="hero" aria-labelledby="hero-title">
         <div>
-          <p class="eyebrow">DOCUMENT INTELLIGENCE / PREVIEW 0.2</p>
+          <p class="eyebrow">DOCUMENT INTELLIGENCE / PREVIEW 0.3</p>
           <h1 id="hero-title">Turn long documents into <em>clear answers.</em></h1>
-          <p class="hero-copy">Start with the questions already in your text. Doc2FAQ extracts their answers into a tidy, searchable FAQ draft—ready for your review.</p>
+          <p class="hero-copy">Extract questions already in your document or turn ordinary sections into source-grounded FAQ suggestions. Review, edit, and export your draft.</p>
           <div class="hero-chips" aria-label="Highlights">
             <span>✦ No account</span><span>✦ No AI calls</span><span>✦ Review before sharing</span>
           </div>
@@ -46,12 +46,18 @@
         <div class="workspace-grid">
           <section class="panel input-panel" aria-labelledby="input-title">
             <div class="panel-top"><div><span class="step-label">STEP 01</span><h3 id="input-title">Add your document</h3></div><span class="file-symbol" aria-hidden="true">↳</span></div>
-            <p class="panel-intro">Paste text or open <code>.txt</code>, <code>.md</code>, <code>.pdf</code>, or <code>.docx</code> (up to 5 MB for PDF/Word). Use question headings or <code>Q:</code> / <code>A:</code> pairs.</p>
+            <p class="panel-intro">Paste text or open <code>.txt</code>, <code>.md</code>, <code>.pdf</code>, or <code>.docx</code> (up to 5 MB for PDF/Word). Choose how to build your draft.</p>
+            <label for="draft-mode" class="field-label">DRAFT MODE</label>
+            <select id="draft-mode" class="mode-select">
+              <option value="extract">Extract Mode — existing questions</option>
+              <option value="generate">Generate Mode — suggest questions</option>
+            </select>
+            <p id="mode-description" class="mode-description">Extract questions already written in the document.</p>
             <label for="source-text" class="field-label">DOCUMENT CONTENT</label>
-            <textarea id="source-text" maxlength="50000" spellcheck="false" placeholder="## What is the return policy?&#10;Returns are accepted within 30 days.&#10;&#10;## When will my order arrive?&#10;Most orders ship within two business days."></textarea>
+            <textarea id="source-text" maxlength="50000" spellcheck="false" placeholder="## Services&#10;Website monitoring and routine updates.&#10;&#10;## Payment Terms&#10;The fee is $120 per month."></textarea>
             <div class="input-meta"><span id="char-count">0 / 50,000 characters</span><span>UTF-8 text</span></div>
             <div class="actions">
-              <button type="button" id="generate-btn" class="button button-primary">Create FAQ draft <span aria-hidden="true">↗</span></button>
+              <button type="button" id="generate-btn" class="button button-primary">Extract FAQ draft <span aria-hidden="true">↗</span></button>
               <label class="button button-secondary file-button" for="file-input">Choose file</label>
               <input id="file-input" type="file" accept=".txt,.md,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
               <button type="button" id="sample-btn" class="button button-quiet">Load example</button>
@@ -61,12 +67,22 @@
 
           <section class="panel results-panel" aria-labelledby="results-title">
             <div class="panel-top"><div><span class="step-label">STEP 02</span><h3 id="results-title">Review your FAQ</h3></div><span id="faq-count" class="count">0 ITEMS</span></div>
-            <p class="panel-intro">Only explicit questions and their written answers are extracted. Nothing is invented.</p>
+            <p id="results-intro" class="panel-intro">Explicit questions and their written answers are extracted. Edit and verify before sharing.</p>
             <div class="result-actions">
-              <label class="visually-hidden" for="search-input">Search extracted questions</label>
+              <label class="visually-hidden" for="search-input">Search draft questions</label>
               <input id="search-input" type="search" placeholder="Search draft answers..." disabled>
+              <label class="visually-hidden" for="export-format">Export format</label>
+              <select id="export-format" class="export-select" disabled>
+                <option value="markdown">Markdown</option>
+                <option value="json">JSON</option>
+                <option value="html">HTML</option>
+              </select>
               <button type="button" id="copy-btn" class="button button-secondary" disabled>Copy</button>
               <button type="button" id="download-btn" class="button button-secondary" disabled>Download .md</button>
+            </div>
+            <div class="review-toolbar">
+              <span>Edit answers and reorder items before sharing</span>
+              <button type="button" id="add-item-btn" class="button button-quiet">+ Add FAQ</button>
             </div>
             <div id="results" class="results-list" aria-live="polite">
               <div class="empty-state">
@@ -81,7 +97,7 @@
 
       <aside class="footnote">
         <div class="footnote-icon" aria-hidden="true">i</div>
-        <p><strong>Good to know.</strong> This is an early, deterministic preview—not AI question generation. It processes text for the preview request without persisting it. PDF/Word text extraction is supported. Scanned PDFs need OCR, which is not included. No files are permanently stored; accounts and team workflows are future features.</p>
+        <p><strong>Good to know.</strong> Both modes use deterministic, source-grounded rules—not an external AI model. Generate Mode suggests questions but cannot understand every document reliably. PDF/Word extraction runs in memory; scanned PDFs need OCR, which is not included. No documents or drafts are intentionally saved on the server. Review every answer before publishing.</p>
       </aside>
     </main>
     <footer class="site-footer"><span>© 2026 Okan Tiktas</span><span>Doc2FAQ · Built for clarity</span></footer>
