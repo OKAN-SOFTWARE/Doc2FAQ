@@ -2,6 +2,14 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
+## Unreleased
+
+### Fixed
+
+- Avoid excessive regex backtracking on whitespace-heavy input in both FAQ modes.
+- Discard pending draft results and errors after the source, example, imported text, or mode changes.
+- Preserve separate client and provider responsibility suggestions while still filtering duplicates for the same party.
+
 ## 0.3.0
 
 ### Added

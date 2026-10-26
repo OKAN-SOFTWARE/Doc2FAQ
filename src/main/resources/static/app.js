@@ -44,6 +44,7 @@ const formatSelect = $("export-format");
 const addButton = $("add-item-btn");
 const modeSelect = $("draft-mode");
 let items = [];
+let draftRevision = 0;
 
 function setStatus(message, kind = "") {
   status.textContent = message;
@@ -231,6 +232,7 @@ function exportData() {
 }
 
 function clearDraft() {
+  draftRevision++;
   items = [];
   search.value = "";
   render();
@@ -333,7 +335,11 @@ draftButton.addEventListener("click", async () => {
     return;
   }
 
-  const generating = selectedMode() === "generate";
+  const mode = selectedMode();
+  const generating = mode === "generate";
+  const revision = draftRevision;
+  const isCurrentDraft = () => revision === draftRevision
+    && source.value === content && selectedMode() === mode;
   draftButton.disabled = true;
   draftButton.textContent = generating ? "Generating draft…" : "Extracting pairs…";
   setStatus(generating ? "Building source-grounded FAQ suggestions…" : "Extracting explicit Q&A pairs…");
@@ -344,6 +350,7 @@ draftButton.addEventListener("click", async () => {
       body: JSON.stringify({content})
     });
     const data = await response.json().catch(() => ({}));
+    if (!isCurrentDraft()) return;
     if (!response.ok) throw new Error(data.message || "Could not create an FAQ draft.");
     items = Array.isArray(data.items)
       ? data.items.filter((item) =>
@@ -357,7 +364,9 @@ draftButton.addEventListener("click", async () => {
       : "No complete Q&A pairs found. Switch to Generate Mode for ordinary documents.",
       items.length ? "success" : "");
   } catch (error) {
-    setStatus(error.message || "The FAQ service is unavailable.", "error");
+    if (isCurrentDraft()) {
+      setStatus(error.message || "The FAQ service is unavailable.", "error");
+    }
   } finally {
     draftButton.disabled = false;
     updateModeText();

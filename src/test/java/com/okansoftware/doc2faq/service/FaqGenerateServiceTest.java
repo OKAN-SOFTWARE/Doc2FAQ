@@ -1,6 +1,7 @@
 package com.okansoftware.doc2faq.service;
 
 import com.okansoftware.doc2faq.model.PreviewResponse;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -200,4 +201,52 @@ class FaqGenerateServiceTest {
                 result.items().get(1).answer());
     }
 
+    @Test
+    void retainsClientAndProviderResponsibilitiesInEitherOrder() {
+        for (boolean clientFirst : new boolean[]{true, false}) {
+            String client = "## Client Responsibilities\nThe client supplies backups.\n";
+            String provider = "## Provider Responsibilities\nThe provider patches software.\n";
+            PreviewResponse result = service.generate(clientFirst ? client + provider : provider + client);
+            assertEquals(2, result.count());
+            assertTrue(result.items().stream().anyMatch(item ->
+                    item.question().contains("client") && item.answer().equals("The client supplies backups.")));
+            assertTrue(result.items().stream().anyMatch(item ->
+                    item.question().contains("provider") && item.answer().equals("The provider patches software.")));
+        }
+    }
+
+    @Test
+    void explicitClientFaqOnlySuppressesDuplicateClientSuggestions() {
+        PreviewResponse result = service.generate("""
+                ## Client Responsibilities
+                The client supplies backups.
+                ## Provider Responsibilities
+                The provider patches software.
+                ## FAQ
+                Q: What responsibilities does the client have under the agreement?
+                A: The client retains backups.
+                """);
+        assertEquals(2, result.count());
+        assertEquals("The client retains backups.", result.items().getFirst().answer());
+        assertEquals("What responsibilities does the provider have under the agreement?",
+                result.items().get(1).question());
+        assertEquals("The provider patches software.", result.items().get(1).answer());
+    }
+
+    @Test
+    void stillDeduplicatesRepeatedResponsibilitiesForTheSameParty() {
+        PreviewResponse result = service.generate("""
+                ## Provider Responsibilities
+                The provider patches software.
+                ## Provider Obligations
+                The provider monitors uptime.
+                """);
+        assertEquals(1, result.count());
+    }
+
+    @Test
+    void generationAlsoHandlesWhitespaceHeavyInputPromptly() {
+        assertTimeoutPreemptively(Duration.ofSeconds(2), () ->
+                assertEquals(1, service.generate("Q:" + " ".repeat(49_990) + "x").count()));
+    }
 }
