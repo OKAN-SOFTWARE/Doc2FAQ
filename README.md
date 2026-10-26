@@ -163,6 +163,8 @@ java -jar target/doc2faq-0.3.1.jar --server.port=8081
 
 Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.
 
+The preview heading and footer display the full project version from `pom.xml`. Maven fills these values when copying `index.html` into the build; changing the project version and rebuilding updates both labels automatically.
+
 ## Using the app
 
 1. Paste your document's text or choose a `.txt`, `.md`, `.pdf`, or `.docx` file.
