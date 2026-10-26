@@ -2,13 +2,18 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
-## Unreleased
+## 0.3.1
 
 ### Fixed
 
 - Avoid excessive regex backtracking on whitespace-heavy input in both FAQ modes.
 - Discard pending draft results and errors after the source, example, imported text, or mode changes.
 - Preserve separate client and provider responsibility suggestions while still filtering duplicates for the same party.
+
+### Changed
+
+- Replaced the document placeholder with neutral Q&A prompts and the Generate Mode sample with a team knowledge guide, removing payment and fee examples from the interface.
+- Added instructions for rebuilding and restarting the versioned JAR, handling occupied ports, and publishing the matching release artifact.
 
 ## 0.3.0
 

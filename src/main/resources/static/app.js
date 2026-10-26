@@ -16,19 +16,19 @@ const extractExample = [
   "A: No. Both modes use local, deterministic processing."
 ].join("\n");
 const generateExample = [
-  "# Website Maintenance Agreement",
+  "# Team Knowledge Guide",
   "",
   "## Services",
-  "The provider performs website monitoring, software updates, and uptime checks.",
+  "The team provides onboarding guides, project templates, and a shared knowledge base.",
   "",
-  "## Payment Terms",
-  "The client pays USD 1,200 per month within fifteen calendar days of invoicing.",
+  "## Team Responsibilities",
+  "Team members keep project notes current and review shared documents for clarity.",
   "",
-  "## Term",
-  "The agreement begins November 1, 2026, and lasts three months.",
+  "## Knowledge Sharing",
+  "Useful examples and project decisions are collected in the shared notes.",
   "",
-  "## Termination",
-  "Either party may terminate with fifteen calendar days of written notice."
+  "## Support",
+  "Ask questions in the team channel and include the steps needed to reproduce a problem."
 ].join("\n");
 
 const $ = (id) => document.getElementById(id);
