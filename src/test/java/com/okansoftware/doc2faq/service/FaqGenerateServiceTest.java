@@ -97,4 +97,107 @@ class FaqGenerateServiceTest {
         }
         assertEquals(30, service.generate(source.toString()).count());
     }
+
+    @Test
+    void demoAgreementKeepsExplicitFaqAndOnlyAddsNewTopics() {
+        PreviewResponse result = service.generate("""
+                SOFTWARE MAINTENANCE AGREEMENT
+                DEMONSTRATION DOCUMENT | FICTIONAL PARTIES | NOT FOR SIGNATURE
+                This sample document is illustrative only.
+
+                1. Services
+                The provider monitors the website and performs maintenance.
+
+                2. Term
+                The engagement begins November 1, 2026 and lasts three months.
+
+                3. Fees and Invoicing
+                The service fee is USD 1,200 per month, due in fifteen days.
+
+                4. Client Responsibilities
+                The client will provide administration access and retain backups.
+
+                5. Confidentiality
+                Both parties will restrict access to confidential materials.
+
+                6. Ownership
+                Each party retains its pre-existing intellectual property.
+
+                7. Termination
+                Either party may terminate with fifteen days' written notice.
+
+                APPENDIX A - FREQUENTLY ASKED QUESTIONS
+                These explicit Q: / A: pairs test extraction.
+                Q: What services are included?
+                A: Website monitoring and maintenance.
+                Q: When does the agreement begin?
+                A: The engagement begins on November 1, 2026.
+                Q: What is the monthly service fee?
+                A: The monthly fee is USD 1,200.
+                Q: When is payment due?
+                A: Within fifteen days of invoicing.
+                Q: How can either party terminate the agreement?
+                A: Fifteen days' written notice.
+                """);
+
+        assertEquals(8, result.count()); // Five explicit + three distinct suggestions.
+        assertEquals("What services are included?", result.items().get(0).question());
+        assertEquals("What responsibilities does the client have under the agreement?",
+                result.items().get(5).question());
+        assertEquals("Who owns the work and deliverables?", result.items().get(7).question());
+        assertTrue(result.items().stream().noneMatch(item ->
+                item.question().contains("SOFTWARE MAINTENANCE AGREEMENT")
+                        || item.question().contains("APPENDIX A")));
+        assertEquals(1, result.items().stream()
+                .filter(item -> item.question().toLowerCase().contains("terminat")).count());
+        assertTrue(result.notice().contains("duplicate"));
+    }
+
+    @Test
+    void preservesDistinctFeeAndPaymentTopicsWhenSourceHasNoFaq() {
+        PreviewResponse result = service.generate("""
+                ## Fees
+                Service is USD 1,200 each month.
+                ## Payment Terms
+                Invoices are due within fifteen calendar days.
+                """);
+
+        assertEquals(2, result.count());
+        assertEquals("What fees does the document specify?", result.items().get(0).question());
+        assertEquals("When and how are payments due?", result.items().get(1).question());
+    }
+
+    @Test
+    void avoidsUnhelpfulTitleAndFaqAppendixInGeneratedQuestions() {
+        PreviewResponse result = service.generate("""
+                SOFTWARE MAINTENANCE AGREEMENT
+                A fictional service agreement for testing.
+                ## APPENDIX A - FREQUENTLY ASKED QUESTIONS
+                Q: What does support include?
+                A: Routine updates and monitoring.
+                """);
+        assertEquals(1, result.count());
+        assertEquals("What does support include?", result.items().get(0).question());
+    }
+
+    @Test
+    void usesNaturalQuestionsForResponsibilitiesAndOwnership() {
+        PreviewResponse result = service.generate("""
+                ## Client Responsibilities
+                The client provides backups.
+                ## Ownership
+                The client owns specified custom deliverables.
+                ## Confidentiality
+                Confidential information is shared only with authorized people.
+                """);
+
+        assertEquals(3, result.count());
+        assertEquals("What responsibilities does the client have under the agreement?",
+                result.items().get(0).question());
+        assertEquals("Who owns the work and deliverables?", result.items().get(1).question());
+        assertEquals("What confidentiality obligations apply?", result.items().get(2).question());
+        assertEquals("The client owns specified custom deliverables.",
+                result.items().get(1).answer());
+    }
+
 }

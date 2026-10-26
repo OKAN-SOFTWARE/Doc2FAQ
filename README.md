@@ -14,10 +14,11 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 - **Generate Mode:** Suggest questions from regular documents, such as service agreements, policies, and résumés, using section headings and the source's own words.
 - **Review editor:** Change questions and answers, move items up or down, remove unwanted entries, or add an FAQ manually (up to 30 items).
 - **Export:** Download or copy **Markdown**, **JSON**, or **standalone HTML**. HTML export escapes document content to prevent injected markup.
+- **Question quality filters:** Avoids duplicate common topics, skips document titles and FAQ appendices, and uses more natural questions for responsibilities, confidentiality and ownership.
 - **Consistent 50,000-character limit** across document extraction, the browser, and both FAQ API endpoints.
 - **Windows CMD setup** for people who don't have Java or Maven installed, plus troubleshooting.
 
-**Privacy and accuracy:** The current Generate Mode is **deterministic and rule-based, not a generative AI model**. No API key, paid AI service, or external model is required. Its questions are suggestions; answers come from excerpts in your source document. It cannot reliably interpret every layout or guarantee an accurate summary. Always review before publishing.
+**Privacy and accuracy:** The current Generate Mode is **deterministic and rule-based, not a generative AI model**. No API key, paid AI service, or external model is required. Its questions are suggestions; answers come from excerpts in your source document. Topic-based duplicate filtering can sometimes suppress distinct details within a topic. It cannot reliably interpret every layout or guarantee an accurate summary. Always review before publishing.
 
 ## Requirements
 
@@ -160,7 +161,7 @@ Website monitoring, routine software updates, and uptime reviews.
 The client pays USD 1,200 within fifteen days of receiving an invoice.
 ```
 
-The answer text is sourced from the document. Generated question phrasing is heuristic; this is *not* legal advice or an automated contract interpretation service.
+Generate Mode preserves explicit FAQ pairs, then suggests questions for additional sections while filtering repeated common topics and boilerplate appendix headings. The answer text is sourced from the document. Generated question phrasing is heuristic; this is *not* legal advice or an automated contract interpretation service.
 
 ## Formats and limits
 
@@ -209,7 +210,7 @@ mvn test
 mvn package
 ```
 
-GitHub Actions automatically runs `mvn -B -ntp verify` on pushes and pull requests. Tests cover both modes, document import errors, API validation, and output limits.
+GitHub Actions automatically runs `mvn -B -ntp verify` on pushes and pull requests. Tests cover both modes, duplicate-topic filtering, FAQ appendix/title exclusions, natural question wording, document import errors, API validation, and output limits.
 
 ## Troubleshooting
 
@@ -232,3 +233,7 @@ This is a **local development application**, not a hardened internet-facing serv
 ## License
 
 MIT · Copyright © 2026 **Okan Tiktas**.
+
+## Planned enhancements
+
+- PDF and DOCX FAQ export with page layout, fonts, document metadata, and validation tests (not included in this version).

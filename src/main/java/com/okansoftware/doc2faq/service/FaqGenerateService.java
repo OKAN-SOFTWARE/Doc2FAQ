@@ -3,6 +3,7 @@ package com.okansoftware.doc2faq.service;
 import com.okansoftware.doc2faq.model.FaqItem;
 import com.okansoftware.doc2faq.model.PreviewResponse;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -25,7 +26,8 @@ public class FaqGenerateService {
     private static final Pattern ALL_CAPS_HEADING = Pattern.compile("^[\\p{Lu}][\\p{Lu}\\p{N} /&(),.'–-]{2,79}:?$");
     private static final Pattern TITLE_CASE_HEADING = Pattern.compile("^[\\p{Lu}][\\p{L}\\p{N} /&(),.'–-]{2,59}:?$");
     private static final String NOTICE = "Generated locally from source passages using deterministic rules. "
-            + "No AI service is used. Verify and edit every question and answer before sharing.";
+            + "Common duplicate topics and FAQ appendices are filtered. No AI service is used. "
+            + "Verify and edit every question and answer before sharing.";
 
     private final FaqDraftService extractor;
 
@@ -43,19 +45,31 @@ public class FaqGenerateService {
 
         List<FaqItem> items = new ArrayList<>(extractor.preview(content).items());
         Set<String> seen = new HashSet<>();
-        items.forEach(item -> seen.add(item.question().toLowerCase(Locale.ROOT)));
+        Set<Topic> seenTopics = EnumSet.noneOf(Topic.class);
+        for (FaqItem item : items) {
+            seen.add(item.question().toLowerCase(Locale.ROOT));
+            Topic topic = topicForQuestion(item.question());
+            if (topic != Topic.OTHER) seenTopics.add(topic);
+        }
 
         for (Section section : splitSections(content)) {
             if (items.size() >= MAX_ITEMS) {
                 break;
             }
             String passage = section.body.toString().strip().replaceAll("\\s+", " ");
-            if (passage.isEmpty() || section.heading.endsWith("?")) {
+            if (passage.isEmpty() || section.heading.endsWith("?")
+                    || isBoilerplateHeading(section.heading)) {
+                continue;
+            }
+            Topic topic = topicForHeading(section.heading);
+            // Preserve all explicit pairs, but do not propose the same subject again.
+            if (topic != Topic.OTHER && seenTopics.contains(topic)) {
                 continue;
             }
             String question = questionFor(section.heading);
             if (seen.add(question.toLowerCase(Locale.ROOT))) {
                 items.add(new FaqItem(question, excerpt(passage)));
+                if (topic != Topic.OTHER) seenTopics.add(topic);
             }
         }
 
@@ -121,29 +135,103 @@ public class FaqGenerateService {
         return heading.endsWith(":") ? heading.substring(0, heading.length() - 1) : heading;
     }
 
+    /**
+     * Detects section titles and appendices that should not become FAQs.
+     * A FAQ appendix is already handled by the explicit Q/A extractor.
+     */
+    private static boolean isBoilerplateHeading(String heading) {
+        String h = heading.toLowerCase(Locale.ROOT).strip();
+        if (h.contains("frequently asked questions") || h.equals("faq") || h.equals("faqs")
+                || h.contains("table of contents") || h.contains("signature")) {
+            return true;
+        }
+        // Standalone document titles are not useful customer-facing questions.
+        return h.equals("agreement") || h.equals("contract")
+                || (h.endsWith(" agreement") && !h.contains("term") && !h.contains("duration"))
+                || (h.endsWith(" contract") && !h.contains("term"));
+    }
+
+    private static Topic topicForHeading(String heading) {
+        String h = heading.toLowerCase(Locale.ROOT);
+        if (h.contains("terminat") || h.contains("cancellat")) return Topic.TERMINATION;
+        if (h.contains("payment") || h.contains("invoic")) return Topic.PAYMENT;
+        if (h.contains("fee") || h.contains("pricing") || h.contains("cost")) return Topic.FEES;
+        if (h.contains("responsibilit") || h.contains("obligation")) return Topic.RESPONSIBILITIES;
+        if (h.contains("ownership") || h.contains("intellectual property")) return Topic.OWNERSHIP;
+        if (h.contains("confidential")) return Topic.CONFIDENTIALITY;
+        if (h.contains("scope") || h.contains("service")) return Topic.SERVICES;
+        if (h.equals("term") || h.contains("duration") || h.contains("agreement term")
+                || h.contains("effective date")) return Topic.TERM;
+        if (h.contains("summary")) return Topic.SUMMARY;
+        if (h.contains("skill") || h.contains("technolog")) return Topic.SKILLS;
+        if (h.contains("experience")) return Topic.EXPERIENCE;
+        if (h.contains("education")) return Topic.EDUCATION;
+        return Topic.OTHER;
+    }
+
+    /** Uses recognizable question intent, not exact string equality. */
+    private static Topic topicForQuestion(String question) {
+        String q = question.toLowerCase(Locale.ROOT);
+        if (q.contains("terminat") || q.contains("cancel")
+                || q.contains("end the agreement")) return Topic.TERMINATION;
+        if (q.contains("when is payment") || q.contains("payment due")
+                || q.contains("invoice") || q.contains("how are payments")) return Topic.PAYMENT;
+        if (q.contains("fee") || q.contains("pricing") || q.contains("price")
+                || q.contains("cost")) return Topic.FEES;
+        if (q.contains("responsibilit") || q.contains("obligation")) return Topic.RESPONSIBILITIES;
+        if (q.contains("ownership") || q.contains("owns the work") || q.contains("deliverables"))
+            return Topic.OWNERSHIP;
+        if (q.contains("confidential")) return Topic.CONFIDENTIALITY;
+        if (q.contains("agreement begin") || q.contains("engagement begin")
+                || q.contains("agreement last") || q.contains("effective date")
+                || q.contains("agreement term") || q.contains("duration")) return Topic.TERM;
+        if (q.contains("service") || q.contains("maintenance hours")
+                || q.contains("scope of work")) return Topic.SERVICES;
+        if (q.contains("professional background")) return Topic.SUMMARY;
+        if (q.contains("skill") || q.contains("technolog")) return Topic.SKILLS;
+        if (q.contains("experience")) return Topic.EXPERIENCE;
+        if (q.contains("education")) return Topic.EDUCATION;
+        return Topic.OTHER;
+    }
+
     private static String questionFor(String heading) {
-        String normalized = heading.toLowerCase(Locale.ROOT);
-        if (normalized.contains("termination") || normalized.contains("cancellation"))
+        String h = heading.toLowerCase(Locale.ROOT);
+        if (h.contains("termination") || h.contains("cancellation"))
             return "How can the agreement be terminated?";
-        if (normalized.contains("fee") || normalized.contains("pricing"))
-            return "What fees does the document specify?";
-        if (normalized.contains("payment"))
+        if (h.contains("client") && (h.contains("responsibilit") || h.contains("obligation")))
+            return "What responsibilities does the client have under the agreement?";
+        if (h.contains("provider") && (h.contains("responsibilit") || h.contains("obligation")))
+            return "What responsibilities does the provider have under the agreement?";
+        if (h.contains("responsibilit") || h.contains("obligation"))
+            return "What responsibilities are outlined in the document?";
+        if (h.contains("ownership") || h.contains("intellectual property"))
+            return "Who owns the work and deliverables?";
+        if (h.contains("confidential"))
+            return "What confidentiality obligations apply?";
+        if (h.contains("payment") || h.contains("invoic"))
             return "When and how are payments due?";
-        if (normalized.contains("service") || normalized.contains("scope of work"))
+        if (h.contains("fee") || h.contains("pricing") || h.contains("cost"))
+            return "What fees does the document specify?";
+        if (h.contains("service") || h.contains("scope of work"))
             return "What services are included?";
-        if (normalized.contains("duration") || normalized.equals("term") || normalized.contains("agreement term"))
+        if (h.contains("duration") || h.equals("term") || h.contains("agreement term"))
             return "How long does the agreement last?";
-        if (normalized.contains("confidential"))
-            return "What are the confidentiality requirements?";
-        if (normalized.contains("professional summary") || normalized.equals("summary"))
+        if (h.contains("professional summary") || h.equals("summary"))
             return "What professional background is described?";
-        if (normalized.contains("skill") || normalized.contains("technolog"))
+        if (h.contains("skill") || h.contains("technolog"))
             return "Which skills and technologies are listed?";
-        if (normalized.contains("experience"))
+        if (h.contains("experience"))
             return "What experience is described?";
-        if (normalized.contains("education"))
+        if (h.contains("education"))
             return "What education is listed?";
-        return "What does the document say about " + heading + "?";
+        if (h.contains("return") || h.contains("refund"))
+            return "What is the return and refund policy?";
+        return "What information is provided about " + heading + "?";
+    }
+
+    private enum Topic {
+        SERVICES, TERM, FEES, PAYMENT, TERMINATION, RESPONSIBILITIES,
+        OWNERSHIP, CONFIDENTIALITY, SUMMARY, SKILLS, EXPERIENCE, EDUCATION, OTHER
     }
 
     private static String excerpt(String passage) {
