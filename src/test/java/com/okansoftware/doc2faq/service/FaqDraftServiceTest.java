@@ -66,7 +66,16 @@ class FaqDraftServiceTest {
     @Test
     void rejectsBlankAndOversizedContent() {
         assertThrows(IllegalArgumentException.class, () -> service.preview("  "));
-        assertThrows(IllegalArgumentException.class, () -> service.preview("a".repeat(20_001)));
+        assertThrows(IllegalArgumentException.class, () -> service.preview("a".repeat(50_001)));
+    }
+
+    @Test
+    void supportsExpandedCharacterLimit() {
+        String heading = "Q: What is the long answer?\nA: ";
+        String exactlyMax = heading + "x".repeat(50_000 - heading.length());
+        PreviewResponse result = service.preview(exactlyMax);
+        assertEquals(1, result.count());
+        assertEquals(50_000 - heading.length(), result.items().get(0).answer().length());
     }
 
     @Test

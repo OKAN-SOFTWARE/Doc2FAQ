@@ -19,8 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class DocumentTextService {
-    public static final int MAX_FILE_BYTES = 2 * 1024 * 1024;
-    public static final int MAX_TEXT_CHARACTERS = 20_000;
+    public static final int MAX_FILE_BYTES = 5 * 1024 * 1024;
+    public static final int MAX_TEXT_CHARACTERS = 50_000;
     private static final int MAX_PDF_PAGES = 50;
     private static final Pattern STANDALONE_QUESTION =
             Pattern.compile("^[^#\\r\\n]{5,150}\\?$");
@@ -43,7 +43,7 @@ public class DocumentTextService {
             throw new DocumentException("UNSUPPORTED_FORMAT", "Only .pdf and .docx uploads are supported");
         }
         if (file.getSize() > MAX_FILE_BYTES) {
-            throw new DocumentException("FILE_TOO_LARGE", "Maximum document size is 2 MB");
+            throw new DocumentException("FILE_TOO_LARGE", "Maximum document size is 5 MB");
         }
 
         byte[] bytes;
@@ -53,7 +53,7 @@ public class DocumentTextService {
             throw new DocumentException("UNREADABLE_DOCUMENT", "Could not read the uploaded file");
         }
         if (bytes.length > MAX_FILE_BYTES) {
-            throw new DocumentException("FILE_TOO_LARGE", "Maximum document size is 2 MB");
+            throw new DocumentException("FILE_TOO_LARGE", "Maximum document size is 5 MB");
         }
         if (pdf && !startsWith(bytes, "%PDF-")) {
             throw new DocumentException("UNREADABLE_DOCUMENT", "This file does not appear to be a valid PDF");
@@ -72,7 +72,7 @@ public class DocumentTextService {
         }
         if (text.length() > MAX_TEXT_CHARACTERS) {
             throw new DocumentException("DOCUMENT_TOO_LONG",
-                    "Extracted text exceeds 20,000 characters. Use a shorter document");
+                    "Extracted text exceeds 50,000 characters. Use a shorter document");
         }
         return new ExtractedDocument(filename, pdf ? "pdf" : "docx", text);
     }

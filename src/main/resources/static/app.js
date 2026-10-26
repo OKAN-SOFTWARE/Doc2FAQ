@@ -1,8 +1,8 @@
 "use strict";
 
-const MAX_CHARS = 20_000;
-const MAX_TEXT_FILE_BYTES = 80_000;
-const MAX_UPLOAD_FILE_BYTES = 2 * 1024 * 1024;
+const MAX_CHARS = 50_000;
+const MAX_TEXT_FILE_BYTES = 256_000;
+const MAX_UPLOAD_FILE_BYTES = 5 * 1024 * 1024;
 const example = [
   "## What is Doc2FAQ?",
   "Doc2FAQ extracts explicit questions and answers from Markdown or plain text.",
@@ -34,7 +34,7 @@ function setStatus(message, kind = "") {
 }
 
 function updateCount() {
-  $("char-count").textContent = source.value.length.toLocaleString() + " / 20,000 characters";
+  $("char-count").textContent = source.value.length.toLocaleString() + " / 50,000 characters";
 }
 
 function render() {
@@ -118,8 +118,8 @@ $("file-input").addEventListener("change", async (event) => {
   }
   if (file.size > (isText ? MAX_TEXT_FILE_BYTES : MAX_UPLOAD_FILE_BYTES)) {
     setStatus(isText
-      ? "Text file is too large. The limit is 80 KB."
-      : "PDF and DOCX files must not exceed 2 MB.", "error");
+      ? "Text file is too large. The limit is 256 KB."
+      : "PDF and DOCX files must not exceed 5 MB.", "error");
     return;
   }
 
@@ -146,7 +146,7 @@ $("file-input").addEventListener("change", async (event) => {
       throw new Error("No usable text found. Scanned PDFs need OCR.");
     }
     if (text.length > MAX_CHARS) {
-      throw new Error("Extracted text exceeds 20,000 characters.");
+      throw new Error("Extracted text exceeds 50,000 characters.");
     }
     source.value = text;
     updateCount();
@@ -167,7 +167,7 @@ generate.addEventListener("click", async () => {
     return;
   }
   if (content.length > MAX_CHARS) {
-    setStatus("Document text exceeds the 20,000-character limit.", "error");
+    setStatus("Document text exceeds the 50,000-character limit.", "error");
     return;
   }
 

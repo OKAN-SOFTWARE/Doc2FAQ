@@ -10,7 +10,7 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
 - New document import endpoint for **PDF** (Apache PDFBox) and **DOCX** (Apache POI).
 - Added browser import for PDF/DOCX, with a mandatory text review step before drafting FAQs.
-- Limits: **2 MB** per PDF/DOCX upload, **50 PDF pages**, **20,000 extracted characters**, and **30 FAQ entries**.
+- Limits: **5 MB** per PDF/DOCX upload, **50 PDF pages**, **50,000 extracted characters**, and **30 FAQ entries**.
 - Checks file signatures as well as filename extensions. Rejects empty, corrupted, password-protected, and unsupported documents.
 - Text is processed in memory and returned to the browser; the app intentionally does not store uploaded documents or generated drafts.
 - Includes unit tests and HTTP integration tests for imported documents.

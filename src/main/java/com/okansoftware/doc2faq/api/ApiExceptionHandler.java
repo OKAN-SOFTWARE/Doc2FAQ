@@ -43,7 +43,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> tooLarge() {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(new ApiError("FILE_TOO_LARGE", "Maximum document size is 2 MB"));
+                .body(new ApiError("FILE_TOO_LARGE", "Maximum document size is 5 MB"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
