@@ -6,9 +6,17 @@ Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or uplo
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-> **Source version: v0.3.0.** The version in `pom.xml` identifies this build. For published tags, release downloads, and announcements, see [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases). This source version does not by itself publish a GitHub Release.
+> **Source version: v0.3.1.** The version in `pom.xml` identifies this build. For published tags, release downloads, and announcements, see [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases). This source version does not by itself publish a GitHub Release.
 
-## What's new in v0.3.0
+## What's fixed in v0.3.1
+
+- Whitespace-heavy input no longer causes excessive backtracking in FAQ question parsing.
+- Draft responses and errors are discarded after the source or mode changes, preventing stale results from being exported.
+- Client and provider responsibilities are treated as distinct topics, preserving both FAQ suggestions.
+
+The document placeholder now uses neutral Q&A prompts, and Generate Mode's sample uses a team knowledge guide instead of payment terms.
+
+## Features introduced in v0.3.0
 
 - **Extract Mode:** Find explicit Markdown question headings and Q:/A: pairs; do not invent questions or answers.
 - **Generate Mode:** Suggest questions from regular documents, such as service agreements, policies, and résumés, using section headings and the source's own words.
@@ -135,6 +143,26 @@ mvn spring-boot:run
 
 Open **http://localhost:8080**.
 
+## Build and run the JAR
+
+After updating your checkout to the latest `main`, run these commands from the directory containing `pom.xml`:
+
+```cmd
+mvn -B -ntp clean verify
+node --test src/test/js/*.test.cjs
+java -jar target/doc2faq-0.3.1.jar
+```
+
+The JavaScript checks require Node.js. Keep the terminal open while the app runs, and use **Ctrl+C** to stop it. Open **http://localhost:8080** and refresh the browser to load the updated frontend.
+
+If port 8080 is occupied, stop the previous Doc2FAQ process or use an alternate port:
+
+```cmd
+java -jar target/doc2faq-0.3.1.jar --server.port=8081
+```
+
+Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.
+
 ## Using the app
 
 1. Paste your document's text or choose a `.txt`, `.md`, `.pdf`, or `.docx` file.
@@ -147,20 +175,20 @@ Example document for **Generate Mode**:
 
 ```markdown
 ## Services
-Website monitoring, routine software updates, and uptime reviews.
+The team provides onboarding guides and a shared knowledge base.
 
-## Payment Terms
-The client pays USD 1,200 within fifteen days of receiving an invoice.
+## Technical Skills
+Members share guides on document organization and clear technical writing.
 ```
 
 Example suggested output:
 
 ```markdown
 ## What services are included?
-Website monitoring, routine software updates, and uptime reviews.
+The team provides onboarding guides and a shared knowledge base.
 
-## When and how are payments due?
-The client pays USD 1,200 within fifteen days of receiving an invoice.
+## Which skills and technologies are listed?
+Members share guides on document organization and clear technical writing.
 ```
 
 Generate Mode preserves explicit FAQ pairs, then suggests questions for additional sections while filtering repeated common topics and boilerplate appendix headings. The answer text is sourced from the document. Generated question phrasing is heuristic; this is *not* legal advice or an automated contract interpretation service.
@@ -208,11 +236,11 @@ The `/api/faqs/preview` endpoint deliberately returns zero results if there are 
 ## Tests
 
 ```bash
-mvn test
-mvn package
+mvn -B -ntp clean verify
+node --test src/test/js/*.test.cjs
 ```
 
-GitHub Actions automatically runs `mvn -B -ntp verify` on pushes and pull requests. Tests cover both modes, duplicate-topic filtering, FAQ appendix/title exclusions, natural question wording, document import errors, API validation, and output limits.
+GitHub Actions automatically runs the Java and JavaScript checks on pushes and pull requests. Tests cover both modes, whitespace-heavy parsing, stale responses and errors, distinct client/provider topics, FAQ appendix/title exclusions, document import errors, API validation, output limits, and export safety. The frontend tests require Node.js and have no npm dependencies.
 
 ## Troubleshooting
 
