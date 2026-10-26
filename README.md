@@ -6,7 +6,7 @@ Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or uplo
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-> **Development version: v0.3.0 (unreleased).** Latest published release: [v0.2.0 — PDF & DOCX Support](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.2.0). This README describes the current development branch, not a published v0.3.0 release.
+> **Source version: v0.3.0.** The version in `pom.xml` identifies this build. For published tags, release downloads, and announcements, see [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases). This source version does not by itself publish a GitHub Release.
 
 ## What's new in v0.3.0
 
@@ -19,6 +19,8 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 - **Windows CMD setup** for people who don't have Java or Maven installed, plus troubleshooting.
 
 **Privacy and accuracy:** The current Generate Mode is **deterministic and rule-based, not a generative AI model**. No API key, paid AI service, or external model is required. Its questions are suggestions; answers come from excerpts in your source document. Topic-based duplicate filtering can sometimes suppress distinct details within a topic. It cannot reliably interpret every layout or guarantee an accurate summary. Always review before publishing.
+
+For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklist, see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Requirements
 
