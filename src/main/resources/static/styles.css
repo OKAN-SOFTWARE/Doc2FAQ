@@ -27,3 +27,32 @@ textarea{width:100%;resize:vertical;min-height:275px;border:1px solid #385066;bo
 @media(max-width:950px){.hero{grid-template-columns:1fr;gap:35px}.hero-art{max-width:540px;transform:rotate(1deg)}.workspace-grid{grid-template-columns:1fr}.panel-intro{min-height:auto}}
 @media(max-width:620px){.app-shell{padding:0 18px}.site-header{height:75px}.brand{font-size:20px}.preview-pill{font-size:8px;padding:9px}.hero{padding:55px 0}.hero-copy{font-size:15px}h1{font-size:44px}.hero-art{display:none}.workspace h2{font-size:25px}.panel{padding:19px}.result-actions{grid-template-columns:1fr 1fr}.result-actions input{grid-column:1/-1}.actions{align-items:stretch}.button-primary{flex-basis:100%}.site-footer{gap:15px;flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.button{transition:none}}
+
+
+/* v0.3 — source-grounded drafting modes and accessible review editor */
+button,input,textarea,select{font:inherit}
+select:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+.mode-select,.export-select{color:var(--text);background:#0c1829;border:1px solid #385066;border-radius:8px;padding:12px 13px}
+.mode-select{width:100%;margin-bottom:2px}
+.mode-description{color:#bdd1dc;font-size:12px;line-height:1.55;min-height:36px;margin:9px 0 20px}
+.export-select:disabled{opacity:.55}
+.result-actions{grid-template-columns:minmax(130px,1fr) auto auto auto}
+.review-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-5px 0 13px;color:var(--muted);font-size:11px}
+.review-toolbar .button{padding:6px 8px;color:var(--mint)}
+.faq-editor{border:1px solid #355067;border-radius:10px;background:#15293a;padding:16px}
+.faq-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.faq-editor-index{font:700 11px ui-monospace,Consolas,monospace;letter-spacing:.08em;color:var(--mint)}
+.faq-editor-actions{display:flex;align-items:center;gap:5px}
+.editor-action{background:#223a4f;border:1px solid #3a5973;border-radius:6px;color:#dbeafa;padding:5px 10px;font-size:12px}
+.editor-action:hover{background:#30516a}
+.editor-action:disabled{opacity:.3;cursor:not-allowed}
+.editor-remove{color:#ffbab8}
+.faq-editor .field-label{color:#a9bfd1;margin:0 0 7px}
+.faq-edit-question{width:100%;background:#0c1829;color:var(--text);border:1px solid #385066;border-radius:7px;padding:11px 12px;font-weight:650;font-size:13px;margin-bottom:15px}
+.faq-edit-answer{width:100%;min-height:92px;resize:vertical;background:#0c1829;color:#d8e5ee;border:1px solid #385066;border-radius:7px;padding:10px 12px;font:12px/1.6 ui-monospace,Consolas,monospace}
+@media(max-width:700px){
+  .result-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .result-actions input{grid-column:1/-1}
+  .export-select{min-width:0}
+  .review-toolbar{flex-wrap:wrap}
+}
