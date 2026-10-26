@@ -30,6 +30,9 @@ class ApiIntegrationTest {
     void landingPageIsServed() throws Exception {
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
+                .andExpect(forwardedUrl("index.html"));
+        mvc.perform(get("/index.html"))
+                .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Doc2FAQ")));
     }
 
