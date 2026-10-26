@@ -6,7 +6,9 @@ Doc2FAQ is a Java 21 / Spring Boot application with a review-first, deterministi
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-## Version 0.2.0 (release candidate)
+**Latest release:** [Doc2FAQ v0.2.0 — PDF & DOCX Support](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.2.0)
+
+## Current release — v0.2.0
 
 - New document import endpoint for **PDF** (Apache PDFBox) and **DOCX** (Apache POI).
 - Added browser import for PDF/DOCX, with a mandatory text review step before drafting FAQs.
@@ -15,7 +17,7 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 - Text is processed in memory and returned to the browser; the app intentionally does not store uploaded documents or generated drafts.
 - Includes unit tests and HTTP integration tests for imported documents.
 
-This version is **not yet a published GitHub Release**. Once CI and manual review pass, merge the pull request into `main`, then create tag `v0.2.0` on `main` and publish the GitHub Release.
+**Published October 26, 2026.** See the [v0.2.0 release notes](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.2.0) for the tagged version of this project. The source for this release is available from GitHub Releases.
 
 ## Run locally
 
