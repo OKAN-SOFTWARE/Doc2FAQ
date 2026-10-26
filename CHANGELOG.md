@@ -2,6 +2,12 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
+## Unreleased
+
+### Fixed
+
+- Show the full build version in the preview heading and footer, populated from `pom.xml` during the Maven build so future releases stay in sync.
+
 ## 0.3.1
 
 ### Fixed
