@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: doc2faq
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
