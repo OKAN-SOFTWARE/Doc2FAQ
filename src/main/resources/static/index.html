@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1423">
+  <meta name="description" content="Doc2FAQ turns explicit document Q&A into a searchable, reviewable FAQ draft.">
+  <title>Doc2FAQ — Clear answers start here</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Doc2FAQ home">
+        <span class="brand-mark" aria-hidden="true">D<span>✳</span></span>
+        <span>Doc<span class="brand-accent">2</span>FAQ</span>
+      </a>
+      <span class="preview-pill"><span class="signal-dot"></span> PREVIEW · LOCAL WORKSPACE</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <p class="eyebrow">DOCUMENT INTELLIGENCE / PREVIEW 0.1</p>
+          <h1 id="hero-title">Turn long documents into <em>clear answers.</em></h1>
+          <p class="hero-copy">Start with the questions already in your text. Doc2FAQ extracts their answers into a tidy, searchable FAQ draft—ready for your review.</p>
+          <div class="hero-chips" aria-label="Highlights">
+            <span>✦ No account</span><span>✦ No AI calls</span><span>✦ Review before sharing</span>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-top"><span>DOC / 001</span><span class="art-lines">•••</span></div>
+          <div class="art-skeleton wide"></div><div class="art-skeleton medium"></div>
+          <div class="art-question"><span>Q</span> How does this work?</div>
+          <div class="art-answer"><span>A</span> One clear answer at a time.</div>
+          <div class="art-bottom"><span>01 / EXTRACTED</span><span>READY TO REVIEW ↗</span></div>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="FAQ draft workspace">
+        <div class="workspace-heading">
+          <div><p class="eyebrow">YOUR WORKSPACE</p><h2>From source to structure.</h2></div>
+          <span class="step-number">01 — 02</span>
+        </div>
+        <div class="workspace-grid">
+          <section class="panel input-panel" aria-labelledby="input-title">
+            <div class="panel-top"><div><span class="step-label">STEP 01</span><h3 id="input-title">Add your document</h3></div><span class="file-symbol" aria-hidden="true">↳</span></div>
+            <p class="panel-intro">Paste text or open a <code>.txt</code>/<code>.md</code> file. Use Markdown question headings or <code>Q:</code> / <code>A:</code> pairs.</p>
+            <label for="source-text" class="field-label">DOCUMENT CONTENT</label>
+            <textarea id="source-text" maxlength="20000" spellcheck="false" placeholder="## What is the return policy?&#10;Returns are accepted within 30 days.&#10;&#10;## When will my order arrive?&#10;Most orders ship within two business days."></textarea>
+            <div class="input-meta"><span id="char-count">0 / 20,000 characters</span><span>UTF-8 text</span></div>
+            <div class="actions">
+              <button type="button" id="generate-btn" class="button button-primary">Create FAQ draft <span aria-hidden="true">↗</span></button>
+              <label class="button button-secondary file-button" for="file-input">Choose file</label>
+              <input id="file-input" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
+              <button type="button" id="sample-btn" class="button button-quiet">Load example</button>
+            </div>
+            <p id="status" class="status" role="status" aria-live="polite">Your document stays in this browser until you choose to preview it.</p>
+          </section>
+
+          <section class="panel results-panel" aria-labelledby="results-title">
+            <div class="panel-top"><div><span class="step-label">STEP 02</span><h3 id="results-title">Review your FAQ</h3></div><span id="faq-count" class="count">0 ITEMS</span></div>
+            <p class="panel-intro">Only explicit questions and their written answers are extracted. Nothing is invented.</p>
+            <div class="result-actions">
+              <label class="visually-hidden" for="search-input">Search extracted questions</label>
+              <input id="search-input" type="search" placeholder="Search draft answers..." disabled>
+              <button type="button" id="copy-btn" class="button button-secondary" disabled>Copy</button>
+              <button type="button" id="download-btn" class="button button-secondary" disabled>Download .md</button>
+            </div>
+            <div id="results" class="results-list" aria-live="polite">
+              <div class="empty-state">
+                <div class="empty-icon" aria-hidden="true">?</div>
+                <h4>Your answers will appear here.</h4>
+                <p>Load the example or add text on the left, then create your first draft.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <aside class="footnote">
+        <div class="footnote-icon" aria-hidden="true">i</div>
+        <p><strong>Good to know.</strong> This is an early, deterministic preview—not AI question generation. It processes text for the preview request without persisting it. PDF/Word extraction, accounts and team workflows are planned for future releases.</p>
+      </aside>
+    </main>
+    <footer class="site-footer"><span>© 2026 Okan Tiktas</span><span>Doc2FAQ · Built for clarity</span></footer>
+  </div>
+</body>
+</html>
