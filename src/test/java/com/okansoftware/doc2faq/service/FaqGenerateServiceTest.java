@@ -57,7 +57,7 @@ class FaqGenerateServiceTest {
                 """);
         assertEquals(2, result.count());
         assertEquals("What is included?", result.items().get(0).question());
-        assertEquals("What are the confidentiality requirements?",
+        assertEquals("What confidentiality obligations apply?",
                 result.items().get(1).question());
         assertEquals("Confidential information must not be shared.",
                 result.items().get(1).answer());
