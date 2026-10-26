@@ -22,7 +22,7 @@
     <main>
       <section class="hero" aria-labelledby="hero-title">
         <div>
-          <p class="eyebrow">DOCUMENT INTELLIGENCE / PREVIEW 0.1</p>
+          <p class="eyebrow">DOCUMENT INTELLIGENCE / PREVIEW 0.2</p>
           <h1 id="hero-title">Turn long documents into <em>clear answers.</em></h1>
           <p class="hero-copy">Start with the questions already in your text. Doc2FAQ extracts their answers into a tidy, searchable FAQ draft—ready for your review.</p>
           <div class="hero-chips" aria-label="Highlights">
@@ -46,17 +46,17 @@
         <div class="workspace-grid">
           <section class="panel input-panel" aria-labelledby="input-title">
             <div class="panel-top"><div><span class="step-label">STEP 01</span><h3 id="input-title">Add your document</h3></div><span class="file-symbol" aria-hidden="true">↳</span></div>
-            <p class="panel-intro">Paste text or open a <code>.txt</code>/<code>.md</code> file. Use Markdown question headings or <code>Q:</code> / <code>A:</code> pairs.</p>
+            <p class="panel-intro">Paste text or open <code>.txt</code>, <code>.md</code>, <code>.pdf</code>, or <code>.docx</code> (up to 2 MB for PDF/Word). Use question headings or <code>Q:</code> / <code>A:</code> pairs.</p>
             <label for="source-text" class="field-label">DOCUMENT CONTENT</label>
             <textarea id="source-text" maxlength="20000" spellcheck="false" placeholder="## What is the return policy?&#10;Returns are accepted within 30 days.&#10;&#10;## When will my order arrive?&#10;Most orders ship within two business days."></textarea>
             <div class="input-meta"><span id="char-count">0 / 20,000 characters</span><span>UTF-8 text</span></div>
             <div class="actions">
               <button type="button" id="generate-btn" class="button button-primary">Create FAQ draft <span aria-hidden="true">↗</span></button>
               <label class="button button-secondary file-button" for="file-input">Choose file</label>
-              <input id="file-input" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
+              <input id="file-input" type="file" accept=".txt,.md,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
               <button type="button" id="sample-btn" class="button button-quiet">Load example</button>
             </div>
-            <p id="status" class="status" role="status" aria-live="polite">Your document stays in this browser until you choose to preview it.</p>
+            <p id="status" class="status" role="status" aria-live="polite">PDF/DOCX files are processed by this server in memory; no documents are permanently saved.</p>
           </section>
 
           <section class="panel results-panel" aria-labelledby="results-title">
@@ -81,7 +81,7 @@
 
       <aside class="footnote">
         <div class="footnote-icon" aria-hidden="true">i</div>
-        <p><strong>Good to know.</strong> This is an early, deterministic preview—not AI question generation. It processes text for the preview request without persisting it. PDF/Word extraction, accounts and team workflows are planned for future releases.</p>
+        <p><strong>Good to know.</strong> This is an early, deterministic preview—not AI question generation. It processes text for the preview request without persisting it. PDF/Word text extraction is supported. Scanned PDFs need OCR, which is not included. No files are permanently stored; accounts and team workflows are future features.</p>
       </aside>
     </main>
     <footer class="site-footer"><span>© 2026 Okan Tiktas</span><span>Doc2FAQ · Built for clarity</span></footer>

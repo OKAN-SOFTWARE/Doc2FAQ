@@ -1,93 +1,93 @@
 # Doc2FAQ
 
-**Turn explicit questions in a document into a clean, searchable FAQ draft.**
+**Turn explicit questions in documents into clean, searchable FAQ drafts.**
 
-Doc2FAQ is a Java 21 / Spring Boot web app. The first release reads Markdown and plain text, extracts questions already present in that text, and lets you review, search, copy, or download the result. It does **not** invent questions, use AI, upload files to external services, or save document text on the server.
+Doc2FAQ is a Java 21 / Spring Boot application with a review-first, deterministic workflow. You can paste text or select a **TXT, Markdown, PDF, or DOCX** file, inspect extracted text, and create FAQ drafts from questions already written in the source. No external AI service is called and no questions are invented.
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-## Run it locally
+## Version 0.2.0 (in development)
 
-You need **Java 21** and **Maven 3.6.3+**.
+- New document import endpoint for **PDF** (Apache PDFBox) and **DOCX** (Apache POI).
+- Added browser import for PDF/DOCX, with a mandatory text review step before drafting FAQs.
+- Limits: **2 MB** per PDF/DOCX upload, **50 PDF pages**, **20,000 extracted characters**, and **30 FAQ entries**.
+- Checks file signatures as well as filename extensions. Rejects empty, corrupted, password-protected, and unsupported documents.
+- Text is processed in memory and returned to the browser; the app intentionally does not store uploaded documents or generated drafts.
+- Includes unit tests and HTTP integration tests for imported documents.
 
-1. Download or clone this repository.
-2. Open a terminal inside the `Doc2FAQ` folder.
-3. Run:
+This version is **not yet a GitHub Release**. Finish review and CI checks before merging, then change the project version in `pom.xml` from `0.2.0-SNAPSHOT` to `0.2.0` when publishing the stable release.
+
+## Run locally
+
+Requirements: **Java 21** and **Maven 3.6.3+**.
 
 ```bash
 mvn spring-boot:run
 ```
 
-4. Open **http://localhost:8080**.
-5. Click **Load example**, then **Create FAQ draft**.
+Open **http://localhost:8080**. Upload a document or click **Load example**, review the input, then click **Create FAQ draft**.
 
-Stop the server with **Ctrl+C**. To use another port:
+On Windows use PowerShell or Command Prompt. To run on another port:
 
 ```bash
 mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=9090"
 ```
 
-On Windows, run the same commands in PowerShell or Command Prompt. If Maven is not installed, install Maven or import `pom.xml` into a Java IDE with Maven support.
+## Supported documents
 
-## How to write an FAQ-friendly document
+| Format | How it is handled |
+| --- | --- |
+| TXT / Markdown | Read locally in the browser, then sent for FAQ preview when requested |
+| PDF | Uploaded to the local Spring Boot server, selectable text extracted with PDFBox |
+| DOCX | Uploaded to the local Spring Boot server, text extracted with Apache POI |
 
-Use a question as a Markdown heading, followed by an answer:
+The upload endpoint uses `multipart/form-data`. It does not perform optical character recognition (OCR). **Image-only/scanned PDFs** cannot be read. Complex PDF layouts, tables, headers, and Word formatting may produce imperfect reading order. Please review imported text and FAQ answers before exporting.
 
-```markdown
-## What is Doc2FAQ?
-It extracts question-and-answer pairs from text.
-
-## Does it use AI?
-No. The first release uses deterministic extraction.
-```
-
-Or use plain text labels:
-
-```text
-Q: Where can I find help?
-A: Contact the support team.
-```
-
-Files supported in the browser: **`.txt` and `.md`**. Text is limited to **20,000 characters**. The preview returns up to **30** distinct FAQ entries. Headings without an answer are ignored.
+Standalone lines that already end with a question mark may be marked as explicit questions after PDF/DOCX import. This is a formatting heuristic, not AI question generation.
 
 ## API
 
-| Method | Route | Purpose |
+| Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/health` | Confirm the service is running and AI is off |
-| POST | `/api/faqs/preview` | Extract explicit Q&A pairs from text |
+| GET | `/api/health` | Returns service status |
+| POST | `/api/faqs/preview` | Extracts up to 30 explicit Q&A pairs from JSON document text |
+| POST | `/api/documents/extract` | Extracts readable text from a PDF or DOCX multipart file |
 
-Example request:
+Extract text:
+
+```bash
+curl -X POST http://localhost:8080/api/documents/extract -F "file=@example.pdf"
+```
+
+Result:
+
+```json
+{"filename":"example.pdf","format":"pdf","text":"Q: What is Doc2FAQ?\nA: A document FAQ workbench."}
+```
+
+Create FAQ draft:
 
 ```bash
 curl -X POST http://localhost:8080/api/faqs/preview \
   -H 'Content-Type: application/json' \
-  -d '{"content":"## What is Doc2FAQ?\nIt creates a reviewable FAQ draft."}'
+  -d '{"content":"Q: What is Doc2FAQ?\nA: A document FAQ workbench."}'
 ```
 
-The API returns `items`, `count`, and a notice describing its limits. Invalid JSON or document text produces a `400` response with a short error code and message.
+Use Markdown question headings or `Q:` / `A:` text pairs. The preview route returns `items`, `count`, and a notice.
 
-## Verify changes
+## Test
 
 ```bash
 mvn test
 mvn package
 ```
 
-GitHub Actions runs `mvn verify` on pushes and pull requests.
+GitHub Actions runs `mvn -B -ntp verify` for changes and pull requests.
 
-## Project layout
+## Security and privacy
 
-- `src/main/java/.../api/` — HTTP controllers and validation errors
-- `src/main/java/.../service/` — deterministic question/answer extraction
-- `src/main/java/.../model/` — request and response records
-- `src/main/resources/static/` — responsive, dependency-free browser interface
-- `src/test/` — service tests and HTTP integration tests
+The application deliberately has no account system or permanent document storage. Uploaded PDF/DOCX contents are handled during one HTTP request and discarded afterwards, aside from transient server upload buffering. Invalid or unsupported formats return a structured error. Multipart limits are configured in `application.yml`.
 
-## Scope and security
-
-This is an **early local preview**, not a public SaaS or a substitute for review. It requires no external service account, database, or API key. Document text is sent only to the locally running Spring Boot server for in-memory extraction; it is not intentionally persisted or sent to an AI provider. Avoid exposing this unauthenticated prototype directly to the public internet.
-
-PDF/DOCX parsing, generated questions, authentication, document persistence, and workspace collaboration are future features—not included in v0.1.0.
+**This is a local development preview, not a hardened public document-processing service.** Do not expose it to the internet without authentication, rate limiting, resource isolation, upload scanning and monitoring. Do not use sensitive material on untrusted servers.
 
 **License:** MIT · Copyright © 2026 Okan Tiktas.
