@@ -68,8 +68,7 @@ class ApiIntegrationTest {
 
     @Test
     void bothEndpointsRejectTextOverFiftyThousandCharacters() throws Exception {
-        String body = new com.fasterxml.jackson.databind.ObjectMapper()
-                .writeValueAsString(java.util.Map.of("content", "x".repeat(50_001)));
+        String body = "{\"content\":\"" + "x".repeat(50_001) + "\"}";
         for (String endpoint : new String[]{"/api/faqs/preview", "/api/faqs/generate"}) {
             mvc.perform(post(endpoint)
                             .contentType(MediaType.APPLICATION_JSON)
