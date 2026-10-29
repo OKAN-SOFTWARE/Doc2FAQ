@@ -2,13 +2,7 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
-## Unreleased
-
-### Fixed
-
-- Show the full build version in the preview heading and footer, populated from `pom.xml` during the Maven build so future releases stay in sync.
-
-## 0.4.0 (unreleased)
+## 0.4.0 — 2026-10-29
 
 ### Added
 
@@ -32,6 +26,10 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Distinct answers under the same topic or question are retained for manual review instead of silently discarded. Exact question/answer duplicates remain filtered; the draft cap remains 30.
 - Answer editing now supports up to 50,000 characters, consistent with imported text.
 - Pending draft results are invalidated when draft entries are edited, added, moved, removed, merged, or restored. Delayed file imports cannot replace newer source/project changes.
+
+### Fixed
+
+- Show the full build version in the preview heading and footer, populated from `pom.xml` during the Maven build so future releases stay in sync.
 
 ## 0.3.1
 

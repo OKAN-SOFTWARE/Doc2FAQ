@@ -6,9 +6,9 @@ Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or uplo
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-> **Development version: v0.4.0-SNAPSHOT.** The version in `pom.xml` identifies this build. For published tags, release downloads, and announcements, see [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases). This source version does not by itself publish a GitHub Release.
+> **Current version: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
 
-## New in the v0.4.0 development build
+## New in v0.4.0
 
 - **Save work / Open saved work:** a versioned JSON file preserves source text, title, mode, draft order, edits, original excerpts, and duplicate-review choices. Incomplete FAQs can be saved too. Project files are limited to 4 MB and validated before replacing the workspace.
 - **Optional browser autosave:** off by default. Enabling it stores the complete source and draft on this browser's origin and restores them on reload. Disabling autosave or using **Clear saved data** removes Doc2FAQ's saved data without clearing your open workspace. Storage failures leave the draft open; use **Save work** as a backup.
@@ -44,6 +44,10 @@ The document placeholder now uses neutral Q&A prompts, and Generate Mode's sampl
 For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklist, see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Requirements
+
+- To run a release download: **Java 21**. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
+
+To build from source:
 
 - Java Development Kit (**JDK 21**), not just a Java Runtime Environment.
 - **Apache Maven 3.6.3 or later** (examples use Maven 3.9.16).
@@ -163,7 +167,7 @@ After updating your checkout to the latest `main`, run these commands from the d
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.4.0-SNAPSHOT.jar
+java -jar target/doc2faq-0.4.0.jar
 ```
 
 The JavaScript checks require Node.js. Keep the terminal open while the app runs, and use **Ctrl+C** to stop it. Open **http://localhost:8080** and refresh the browser to load the updated frontend.
@@ -171,7 +175,7 @@ The JavaScript checks require Node.js. Keep the terminal open while the app runs
 If port 8080 is occupied, stop the previous Doc2FAQ process or use an alternate port:
 
 ```cmd
-java -jar target/doc2faq-0.4.0-SNAPSHOT.jar --server.port=8081
+java -jar target/doc2faq-0.4.0.jar --server.port=8081
 ```
 
 Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.
@@ -309,4 +313,4 @@ MIT · Copyright © 2026 **Okan Tiktas**.
 
 ## Later releases
 
-Optional AI generation with explicit opt-in and token/cost limits, OCR, and account/subscription workflows are outside the v0.4.0 development scope. See [docs/RELEASING.md](docs/RELEASING.md) for the validation and release process.
+Optional AI generation with explicit opt-in and token/cost limits, OCR, and account/subscription workflows are outside the v0.4.0 scope. See [docs/RELEASING.md](docs/RELEASING.md) for the validation and release process.
