@@ -4,6 +4,7 @@ import com.okansoftware.doc2faq.model.ExportRequest;
 import com.okansoftware.doc2faq.service.FaqExportService;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,8 +32,18 @@ public class ExportController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(mime))
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
-                        .filename("doc2faq-draft." + format).build().toString())
+                        .filename(downloadFilename(request.filename(), format), StandardCharsets.UTF_8).build().toString())
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(data);
+    }
+
+    private static String downloadFilename(String requested, String format) {
+        if (requested == null || requested.isBlank()) return "doc2faq-draft." + format;
+        String stem = requested.strip().replaceFirst("(?i)\\.(pdf|docx)$", "")
+                .replaceAll("[<>:\"/\\\\|?*\\p{Cntrl}]", "-")
+                .replaceAll("^\\.+|[. ]+$", "");
+        if (stem.isBlank()) stem = "document-Doc2FAQ";
+        if (stem.matches("(?i)^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\\..*)?$")) stem = "document-" + stem;
+        return stem + "." + format;
     }
 }

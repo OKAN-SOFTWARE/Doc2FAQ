@@ -9,8 +9,10 @@
   <link rel="stylesheet" href="/styles.css">
   <script src="/project.js" defer></script>
   <script src="/app.js" defer></script>
+  <script src="/background.js" defer></script>
 </head>
 <body>
+  <canvas id="ambient-background" aria-hidden="true"></canvas>
   <div class="app-shell">
     <header class="site-header">
       <a class="brand" href="/" aria-label="Doc2FAQ home">
@@ -46,12 +48,14 @@
         </div>
         <div class="project-toolbar">
           <div class="project-name">
-            <label for="project-title" class="field-label">PROJECT TITLE</label>
-            <input id="project-title" type="text" maxlength="200" value="FAQ draft">
+            <label for="project-title" class="field-label">DOCUMENT TITLE</label>
+            <input id="project-title" type="text" maxlength="200" value="FAQ draft" aria-describedby="document-title-help">
+            <p id="document-title-help" class="field-help">The heading printed at the top of your exported FAQ.</p>
           </div>
-          <button type="button" id="save-project-btn" class="button button-secondary">Save project</button>
-          <button type="button" id="open-project-btn" class="button button-secondary">Open project</button>
+          <button type="button" id="save-project-btn" class="button button-secondary" title="Keep your document and edits so you can continue later">Save work</button>
+          <button type="button" id="open-project-btn" class="button button-secondary">Open saved work</button>
           <input id="project-input" type="file" accept=".json,application/json" hidden>
+          <p class="save-work-help">Save work keeps your source and edits for later. Use Download for the finished FAQ.</p>
           <div class="autosave-controls">
             <label><input id="autosave-toggle" type="checkbox"> Autosave source and drafts in this browser</label>
             <button type="button" id="clear-saved-btn" class="button button-quiet">Clear saved data</button>
@@ -68,7 +72,11 @@
               <option value="generate">Generate Mode — suggest questions</option>
             </select>
             <p id="mode-description" class="mode-description">Extract questions already written in the document.</p>
-            <label for="source-text" class="field-label">DOCUMENT CONTENT</label>
+            <div class="document-content-heading">
+              <label for="source-text" class="field-label">DOCUMENT CONTENT</label>
+              <button type="button" id="clear-document-btn" class="button button-quiet" disabled>Clear document</button>
+            </div>
+            <p id="source-filename" class="source-filename">No document loaded</p>
             <textarea id="source-text" maxlength="50000" spellcheck="false" placeholder="Q: How can I organize my notes?&#10;A: Use clear headings and group related topics.&#10;&#10;Q: What makes a helpful answer?&#10;A: Keep it clear, concise, and based on the source."></textarea>
             <div class="input-meta"><span id="char-count">0 / 50,000 characters</span><span>UTF-8 text</span></div>
             <div class="actions">
@@ -83,6 +91,12 @@
           <section class="panel results-panel" aria-labelledby="results-title">
             <div class="panel-top"><div><span class="step-label">STEP 02</span><h3 id="results-title">Review your FAQ</h3></div><span id="faq-count" class="count">0 ITEMS</span></div>
             <p id="results-intro" class="panel-intro">Explicit questions and their written answers are extracted. Edit and verify before sharing.</p>
+            <label for="download-name" class="field-label">DOWNLOAD FILENAME</label>
+            <div class="download-name-field">
+              <input id="download-name" type="text" maxlength="180" value="document-Doc2FAQ" aria-describedby="download-name-help">
+              <span id="download-extension" aria-hidden="true">.md</span>
+            </div>
+            <p id="download-name-help" class="field-help">Edit this name before downloading. The extension follows your chosen format.</p>
             <div class="result-actions">
               <label class="visually-hidden" for="search-input">Search draft questions</label>
               <input id="search-input" type="search" placeholder="Search draft answers..." disabled>

@@ -22,6 +22,21 @@
   function edited(item) {
     return item.edited === true || item.question !== item.originalQuestion || item.answer !== item.originalAnswer;
   }
+  function sourceTitle(name) {
+    return name.split(/[\\/]/).pop().replace(/\.[^.]+$/, "").trim().slice(0, 200) || "FAQ draft";
+  }
+  function defaultDownloadName(name) {
+    const stem = sourceTitle(name).normalize("NFKC").toLowerCase()
+      .replace(/-doc2faq$/i, "").replace(/[^\p{L}\p{N}._-]/gu, "").replace(/^\.+|\.+$/g, "").slice(0, 160);
+    return (stem || "document") + "-Doc2FAQ";
+  }
+  function downloadFilename(name, format) {
+    const ext = {markdown: "md", json: "json", html: "html", pdf: "pdf", docx: "docx"}[format] || "md";
+    let stem = (name || "").trim().replace(/\.(pdf|docx|md|json|html)$/i, "")
+      .replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, "-").replace(/^\.+|[. ]+$/g, "").slice(0, 180);
+    if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(stem)) stem = "document-" + stem;
+    return (stem || "document-Doc2FAQ") + "." + ext;
+  }
   function validateProject(project) {
     if (!project || project.type !== "doc2faq-project" || project.schemaVersion !== 1) {
       fail("Choose a supported Doc2FAQ project file (schema version 1).");
@@ -30,6 +45,7 @@
     if (!["extract", "generate"].includes(project.mode)) fail("Invalid project mode.");
     const text = string(project.source?.text, 50000, "source text");
     const name = string(project.source?.name, 255, "source filename");
+    const downloadName = string(project.downloadName ?? defaultDownloadName(name), 180, "download filename");
     if (!Array.isArray(project.items) || project.items.length > 30) fail("A project can contain at most 30 FAQs.");
     const sourceLines = lines(text);
     const ids = new Set();
@@ -64,7 +80,7 @@
     });
     if (answerCharacters > 300000) fail("FAQ text must not exceed 300,000 characters.");
     for (const item of items) item.keptWith = item.keptWith.filter((key) => ids.has(key) && key !== item.id);
-    return {type: "doc2faq-project", schemaVersion: 1, title, mode: project.mode, source: {text, name}, items};
+    return {type: "doc2faq-project", schemaVersion: 1, title, downloadName, mode: project.mode, source: {text, name}, items};
   }
   function serialize(project) {
     const text = JSON.stringify(validateProject(project), null, 2) + "\n";
@@ -105,7 +121,8 @@
     if (sources.length > 30) fail("The merged FAQ would have too many source references.");
     return {...first, answer, sources, keptWith: [], edited: true};
   }
-  const api = {MAX_PROJECT_BYTES, normalizeItem, edited, validateProject, serialize, parse, similar, related, merge};
+  const api = {MAX_PROJECT_BYTES, normalizeItem, edited, sourceTitle, defaultDownloadName, downloadFilename,
+    validateProject, serialize, parse, similar, related, merge};
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Doc2FaqProject = api;
 })(globalThis);

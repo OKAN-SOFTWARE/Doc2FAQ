@@ -6,7 +6,7 @@ const assert = require("node:assert/strict");
 const tools = require("../../main/resources/static/project.js");
 const script = readFileSync(path.resolve(__dirname, "../../main/resources/static/app.js"), "utf8");
 
-function harness(saved = new Map(), blocked = false) {
+function harness(saved = new Map(), blocked = false, fetcher = null) {
   const elements = new Map();
   function node(tag = "") {
     return {tag, value: "", checked: false, disabled: false, children: [], handlers: {}, textContent: "",
@@ -26,9 +26,9 @@ function harness(saved = new Map(), blocked = false) {
     removeItem(key) { if (blocked) throw new Error("Storage blocked"); saved.delete(key); }
   };
   const context = {Doc2FaqProject: tools, document: {getElementById: element, createElement: node},
-    localStorage: storage, setTimeout(fn) { fn(); return 1; }, clearTimeout() {}, confirm: () => true,
-    fetch: async () => ({ok: true, json: async () => ({items: [{question: "Where is support?", answer: "Ask the team.",
-      source: {section: "Support", startLine: 1, endLine: 2, excerpt: "Q: Where is support?\nA: Ask the team."}}]})})};
+    FormData: class { append() {} }, localStorage: storage, setTimeout(fn) { fn(); return 1; }, clearTimeout() {}, confirm: () => true,
+    fetch: fetcher || (async () => ({ok: true, json: async () => ({items: [{question: "Where is support?", answer: "Ask the team.",
+      source: {section: "Support", startLine: 1, endLine: 2, excerpt: "Q: Where is support?\nA: Ask the team."}}]})}))};
   vm.runInNewContext(script, context);
   return {element, saved};
 }
@@ -143,4 +143,87 @@ test("invalid project files leave the current source and FAQs untouched", async 
   assert.equal(app.element("faq-count").textContent, "1 ITEM");
   assert.equal(app.element("source-text").value, "Q: Where is support?\nA: Ask the team.");
   assert.equal(app.element("status").className, "status error");
+});
+
+test("uploading a PDF fills in its document title and download name", async () => {
+  const app = harness(new Map(), false, async () => ({ok: true, json: async () => ({text: "Q: What?\nA: Example."})}));
+  const input = app.element("file-input");
+  input.files = [{name: "TEst Data.pdf", size: 100}];
+  await input.handlers.change({target: input});
+  assert.equal(app.element("project-title").value, "TEst Data");
+  assert.equal(app.element("download-name").value, "testdata-Doc2FAQ");
+  assert.equal(app.element("source-filename").textContent, "TEst Data.pdf");
+  app.element("source-text").value += " Updated."; app.element("source-text").handlers.input();
+  assert.equal(app.element("download-name").value, "testdata-Doc2FAQ");
+  assert.equal(app.element("source-filename").textContent, "TEst Data.pdf");
+});
+
+test("clear document removes source, draft, names and saved text without restoring them on reload", async () => {
+  const app = harness(); await makeDraft(app);
+  app.element("autosave-toggle").checked = true; app.element("autosave-toggle").handlers.change();
+  app.element("clear-document-btn").handlers.click();
+  assert.equal(app.element("source-text").value, "");
+  assert.equal(app.element("faq-count").textContent, "0 ITEMS");
+  assert.equal(app.element("project-title").value, "FAQ draft");
+  assert.equal(app.element("download-name").value, "document-Doc2FAQ");
+  assert.equal(app.element("source-filename").textContent, "No document loaded");
+  assert.equal(app.saved.has("doc2faq.project.v1"), false);
+  assert.equal(app.saved.get("doc2faq.autosave"), "true");
+  assert.equal(app.element("clear-document-btn").disabled, true);
+  const restored = harness(app.saved);
+  assert.equal(restored.element("source-text").value, "");
+  assert.equal(restored.element("faq-count").textContent, "0 ITEMS");
+});
+
+test("clearing an import discards its late result and does not enable a newer pending upload", async () => {
+  const responses = [];
+  const app = harness(new Map(), false, () => new Promise(resolve => responses.push(resolve)));
+  const input = app.element("file-input");
+  input.files = [{name: "old.pdf", size: 100}];
+  const oldImport = input.handlers.change({target: input});
+  assert.equal(app.element("clear-document-btn").disabled, false);
+  app.element("clear-document-btn").handlers.click();
+  input.files = [{name: "New Data.pdf", size: 100}];
+  const newImport = input.handlers.change({target: input});
+  responses[0]({ok: true, json: async () => ({text: "Old content."})});
+  await oldImport;
+  assert.equal(input.disabled, true);
+  assert.equal(app.element("source-text").value, "");
+  responses[1]({ok: true, json: async () => ({text: "New content."})});
+  await newImport;
+  assert.equal(app.element("source-text").value, "New content.");
+  assert.equal(app.element("download-name").value, "newdata-Doc2FAQ");
+  assert.equal(input.disabled, false);
+});
+
+test("clearing during generation discards the old FAQ response", async () => {
+  let finish;
+  const app = harness(new Map(), false, () => new Promise(resolve => {finish = resolve;}));
+  app.element("source-text").value = "Q: What?\nA: Old document.";
+  const request = app.element("generate-btn").handlers.click();
+  app.element("clear-document-btn").handlers.click();
+  finish({ok: true, json: async () => ({items: [{question: "What?", answer: "Old document."}]})});
+  await request;
+  assert.equal(app.element("faq-count").textContent, "0 ITEMS");
+  assert.equal(app.element("source-text").value, "");
+  assert.match(app.element("status").textContent, /cleared/);
+  assert.equal(app.element("generate-btn").disabled, false);
+});
+
+test("clearing during a PDF export prevents an old document download", async () => {
+  let finishExport;
+  let blobRead = false;
+  const app = harness(new Map(), false, async (url) => {
+    if (url.endsWith("/export/pdf")) return new Promise(resolve => { finishExport = resolve; });
+    return {ok: true, json: async () => ({items: [{question: "Where is support?", answer: "Ask the team."}]})};
+  });
+  await makeDraft(app);
+  app.element("export-format").value = "pdf";
+  const request = app.element("download-btn").handlers.click();
+  app.element("clear-document-btn").handlers.click();
+  finishExport({ok: true, blob: async () => { blobRead = true; return {}; }});
+  await request;
+  assert.equal(blobRead, false);
+  assert.equal(app.element("faq-count").textContent, "0 ITEMS");
+  assert.match(app.element("status").textContent, /cleared/);
 });

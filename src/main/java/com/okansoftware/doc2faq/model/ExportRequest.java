@@ -11,7 +11,8 @@ import java.util.List;
 public record ExportRequest(
         @NotBlank @Size(max = 200) String title,
         @NotEmpty @Size(max = 30) List<@NotNull @Valid Entry> items,
-        Boolean includeSources) {
+        Boolean includeSources,
+        @Size(max = 200) String filename) {
     public ExportRequest {
         includeSources = Boolean.TRUE.equals(includeSources);
     }

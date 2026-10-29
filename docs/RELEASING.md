@@ -17,11 +17,11 @@ Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Check th
 1. Extract explicit Markdown and Q:/A: questions. Expand Show source; verify exact excerpts and text-line ranges.
 2. Generate from multiple sections, including repeated topics with different details. Confirm distinct passages remain. Use Keep both, merge, and Undo; confirm both references survive a merge.
 3. Edit a question/answer; confirm its edited label. Remove an item and Undo. Reorder items and use search.
-4. Set a project title, save the project, refresh, and reopen it. Confirm source, order, edited values, references, and review choices. Save and reopen an incomplete FAQ too. An invalid project must leave the workspace intact.
-5. Enable autosave, edit, wait for Saved in this browser, and reload. Confirm restore. Clear saved data and reload; confirm it is gone. Test with browser storage unavailable and use Save project as the fallback.
-6. Preview exports and download Markdown, JSON, HTML, PDF, and DOCX with edited content. Check titles and optional references; HTML must display document markup as text.
+4. Set a document title, use Save work, refresh, and reopen it. Confirm source, order, edited values, references, and review choices. Save and reopen an incomplete FAQ too. An invalid project must leave the workspace intact.
+5. Enable autosave, edit, wait for Saved in this browser, and reload. Confirm restore. Clear saved data and reload; confirm it is gone. Test with browser storage unavailable and use Save work as the fallback.
+6. Preview exports and download Markdown, JSON, HTML, PDF, and DOCX with edited content. Upload `TEst Data.pdf` and confirm the suggested filename is `testdata-Doc2FAQ.pdf`; rename it and check the actual download. Clear document, reload, and confirm the previous PDF and draft stay cleared. Check centered titles, Lato PDF fonts, no FAQ-count subtitle, and optional references; HTML must display document markup as text.
 7. Open PDF and Word downloads with short and long answers, Unicode text, long unbroken tokens, and page breaks. Check margins, heading placement, footer page numbers, and the final answer. Unsupported PDF glyphs must produce an error with the DOCX option.
-8. Change source/mode or open a project while a draft/file request is pending. The old response must not replace current work. Check desktop and narrow-screen controls and keyboard focus.
+8. Change source/mode or open a project while a draft/file request is pending. The old response must not replace current work. Check desktop and narrow-screen controls and keyboard focus. Move the pointer to check the background; enable reduced motion and confirm it stays still.
 
 ## Prepare the release commit
 

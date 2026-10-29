@@ -12,6 +12,11 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 
 ### Added
 
+- Cursor-responsive ambient background with reduced-motion and page-visibility support.
+- Document title help, separate editable download filename, and Save work labels that explain how to resume edits.
+- Clear document control that also removes the saved source and discards late imports, FAQ responses, and exports.
+- Original source filename defaults such as `TEst Data.pdf` to `testdata-Doc2FAQ.pdf`, preserved in saved work and supported by export response headers.
+
 - Versioned project files that save/reopen source text, title, FAQ edits/order, original excerpts, and review choices, including incomplete entries.
 - Optional browser autosave/restore with clear saved data controls; saving is off by default.
 - Exact source excerpts and extracted-text line references for both drafting modes, with edited-answer labels.
@@ -21,6 +26,8 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Project/schema/merge tests, source-reference tests, and export API tests for Unicode, pagination, validation, and unsupported PDF glyphs.
 
 ### Changed
+
+- PDF uses embedded Lato Regular/Bold fonts and a centered title; PDF and Word exports omit the FAQ-count subtitle.
 
 - Distinct answers under the same topic or question are retained for manual review instead of silently discarded. Exact question/answer duplicates remain filtered; the draft cap remains 30.
 - Answer editing now supports up to 50,000 characters, consistent with imported text.

@@ -74,3 +74,14 @@ select:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
 #export-preview::backdrop{background:#000a}.preview-header{display:flex;justify-content:space-between;align-items:center;gap:12px}.preview-header h2{font-size:20px}.preview-note{color:var(--muted);font-size:12px;line-height:1.5}
 #preview-content{background:#fff;color:#172233;border-radius:6px;padding:32px;margin-top:18px;overflow-wrap:anywhere}#preview-content h1{font:700 28px/1.25 system-ui,sans-serif;letter-spacing:normal}#preview-content h2{font:700 19px/1.4 system-ui,sans-serif;margin:28px 0 10px}#preview-content p{white-space:pre-wrap;font:14px/1.7 system-ui,sans-serif}#preview-content .preview-source{font-size:11px;color:#475569}
 @media(max-width:620px){.project-toolbar{padding:16px}.project-name{flex-basis:100%}.autosave-controls{gap:8px}.preview-header{flex-wrap:wrap}#preview-content{padding:20px}.result-actions{grid-template-columns:1fr 1fr}.result-actions .export-select{grid-column:1/-1}.faq-editor-heading{flex-wrap:wrap}}
+
+/* Ambient canvas and document download controls */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 650px 500px at var(--pointer-x,65%) var(--pointer-y,15%),#4a9e9320,transparent 75%),radial-gradient(ellipse at 12% 75%,#c8a76b0c,transparent 60%)}
+#ambient-background{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.app-shell{position:relative;z-index:1}.field-help{font-size:12px;line-height:1.55;color:var(--muted);margin:7px 0 0}
+.save-work-help{flex-basis:100%;font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+.document-content-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.document-content-heading .field-label{margin:0}.document-content-heading .button{padding:6px 9px;min-height:32px;font-size:11px;color:var(--mint)}
+.source-filename{color:var(--muted);font-size:11px;line-height:1.5;margin:4px 0 10px;overflow-wrap:anywhere}
+.download-name-field{display:flex;align-items:center;border:1px solid #385066;background:#0c1829;border-radius:8px;overflow:hidden}.download-name-field input{min-width:0;flex:1;width:100%;border:0;padding:11px 12px;background:transparent;color:var(--text);font-size:13px}.download-name-field span{padding:10px 12px;color:var(--mint);font:12px ui-monospace,monospace;border-left:1px solid var(--line)}
+#download-name-help{margin-bottom:16px}#preview-content h1{text-align:center}
+@media(prefers-reduced-motion:reduce){body::before{background:radial-gradient(ellipse at 65% 15%,#4a9e9315,transparent 70%)}#ambient-background{opacity:.4}}

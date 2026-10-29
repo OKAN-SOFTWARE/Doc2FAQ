@@ -45,15 +45,14 @@ public class FaqExportService {
     public byte[] pdf(ExportRequest request) throws IOException {
         validate(request);
         try (PDDocument document = new PDDocument(); ByteArrayOutputStream output = new ByteArrayOutputStream();
-             InputStream normal = font("DejaVuSans.ttf"); InputStream strong = font("DejaVuSans-Bold.ttf")) {
+             InputStream normal = font("Lato-Regular.ttf"); InputStream strong = font("Lato-Bold.ttf")) {
             PDType0Font regular = PDType0Font.load(document, normal);
             PDType0Font bold = PDType0Font.load(document, strong);
             document.getDocumentInformation().setTitle(request.title().strip());
             document.getDocumentInformation().setCreator("Doc2FAQ");
             PdfLayout layout = new PdfLayout(document, regular, bold);
             try {
-                layout.paragraph(request.title().strip(), 24, true, 14);
-                layout.paragraph(request.items().size() + " frequently asked questions", 10, false, 22);
+                layout.title(request.title().strip());
                 for (int i = 0; i < request.items().size(); i++) {
                     var item = request.items().get(i);
                     layout.heading((i + 1) + ". " + item.question().strip());
@@ -102,8 +101,8 @@ public class FaqExportService {
 
             var title = paragraph(document, request.title().strip(), 24, false);
             title.setStyle("Title");
-            title.setSpacingAfter(220);
-            paragraph(document, request.items().size() + " frequently asked questions", 10, false).setSpacingAfter(360);
+            title.setAlignment(ParagraphAlignment.CENTER);
+            title.setSpacingAfter(360);
             for (int i = 0; i < request.items().size(); i++) {
                 var item = request.items().get(i);
                 var heading = paragraph(document, (i + 1) + ". " + item.question().strip(), 14, true);
@@ -141,7 +140,7 @@ public class FaqExportService {
         paragraph.setSpacingAfter(160);
         paragraph.setSpacingBetween(1.2);
         XWPFRun run = paragraph.createRun();
-        run.setFontFamily("DejaVu Sans"); run.setFontSize(size); run.setBold(bold); run.setColor("000000");
+        run.setFontFamily("Calibri"); run.setFontSize(size); run.setBold(bold); run.setColor("000000");
         String[] lines = text.split("\\R", -1);
         for (int i = 0; i < lines.length; i++) {
             if (i > 0) run.addBreak();
@@ -186,6 +185,17 @@ public class FaqExportService {
             var lines = wrap(text, bold, 13);
             if (y - (lines.size() * 19 + 32) < MARGIN && y < 738) newPage();
             paragraph(text, 13, true, 8);
+        }
+
+        void title(String text) throws IOException {
+            int size = 26;
+            for (String line : wrap(text, bold, size)) {
+                if (y - size * 1.5f < MARGIN) newPage();
+                float width = bold.getStringWidth(line) / 1000 * size;
+                draw(stream, line, bold, size, MARGIN + (WIDTH - width) / 2, y - size);
+                y -= size * 1.5f;
+            }
+            gap(24);
         }
 
         void paragraph(String text, int size, boolean strong, int after) throws IOException {

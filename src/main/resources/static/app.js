@@ -53,12 +53,15 @@ let undoHistory = [];
 let saveTimer;
 let importRevision = 0;
 let reviewUpdaters = [];
+let activeDraftRequest = 0;
+let activeExportRequest = 0;
+let exporting = false;
 
 function projectTitle() { return $("project-title").value.trim() || "FAQ draft"; }
 
 function currentProject() {
   return {type: "doc2faq-project", schemaVersion: 1, title: projectTitle(), mode: selectedMode(),
-    source: {text: source.value, name: sourceName}, items};
+    downloadName: $("download-name").value, source: {text: source.value, name: sourceName}, items};
 }
 
 function autosave() {
@@ -83,9 +86,15 @@ function remember() {
 function applyProject(project) {
   draftRevision++;
   importRevision++;
+  activeDraftRequest++;
+  activeExportRequest++;
+  exporting = false;
+  draftButton.disabled = false;
+  $("file-input").disabled = false;
   source.value = project.source.text;
   sourceName = project.source.name;
   $("project-title").value = project.title;
+  $("download-name").value = projectTools.downloadFilename(project.downloadName, "pdf").replace(/\.pdf$/, "");
   modeSelect.value = project.mode;
   items = project.items;
   undoHistory = [];
@@ -142,13 +151,16 @@ function updateControls() {
   const ready = validDraft();
   search.disabled = !hasItems;
   copyButton.disabled = !ready || ["pdf", "docx"].includes(formatSelect.value);
-  downloadButton.disabled = !ready;
+  downloadButton.disabled = !ready || exporting;
   formatSelect.disabled = !hasItems;
   addButton.disabled = items.length >= MAX_ITEMS;
   $("preview-btn").disabled = !ready;
   $("undo-btn").disabled = !undoHistory.length;
   const ext = {markdown: "md", json: "json", html: "html", pdf: "pdf", docx: "docx"}[formatSelect.value] || "md";
   downloadButton.textContent = "Download ." + ext;
+  $("download-extension").textContent = "." + ext;
+  $("source-filename").textContent = source.value ? sourceName : "No document loaded";
+  $("clear-document-btn").disabled = !source.value && !hasItems && !$("file-input").disabled;
   count.textContent = items.length + (items.length === 1 ? " ITEM" : " ITEMS");
 }
 
@@ -364,7 +376,7 @@ function html() {
     '  <meta charset="utf-8">\n' +
     '  <meta name="viewport" content="width=device-width, initial-scale=1">\n' +
     "  <title>" + escapeHtml(projectTitle()) + "</title>\n" +
-    "  <style>body{font:16px/1.6 system-ui,sans-serif;max-width:800px;margin:48px auto;padding:0 24px;color:#172233}h2{font-size:20px;margin-top:32px}.source{font-size:12px;color:#475569}p{overflow-wrap:anywhere}</style>\n</head>\n<body>\n" +
+    "  <style>body{font:16px/1.6 system-ui,sans-serif;max-width:800px;margin:48px auto;padding:0 24px;color:#172233}h1{text-align:center}h2{font-size:20px;margin-top:32px}.source{font-size:12px;color:#475569}p{overflow-wrap:anywhere}</style>\n</head>\n<body>\n" +
     "  <main>\n    <h1>" + escapeHtml(projectTitle()) + "</h1>\n" + entries +
     "\n  </main>\n</body>\n</html>\n";
 }
@@ -377,6 +389,9 @@ function exportData() {
 
 function clearDraft() {
   draftRevision++;
+  activeDraftRequest++;
+  draftButton.disabled = false;
+  updateModeText();
   items = [];
   undoHistory = [];
   search.value = "";
@@ -385,7 +400,7 @@ function clearDraft() {
 
 source.addEventListener("input", () => {
   importRevision++;
-  sourceName = "Pasted text";
+  $("file-input").disabled = false;
   updateCount();
   clearDraft(); autosave();
   setStatus("Source updated. Create a new FAQ draft.");
@@ -402,6 +417,9 @@ $("sample-btn").addEventListener("click", () => {
   source.value = selectedMode() === "generate" ? generateExample : extractExample;
   importRevision++;
   sourceName = "Example document";
+  $("project-title").value = selectedMode() === "generate" ? "Team Knowledge FAQ" : "Doc2FAQ";
+  $("download-name").value = "example-Doc2FAQ";
+  $("file-input").disabled = false;
   updateCount();
   clearDraft(); autosave();
   source.focus();
@@ -445,6 +463,7 @@ $("file-input").addEventListener("change", async (event) => {
   input.disabled = true;
   const revision = ++importRevision;
   draftRevision++;
+  updateControls();
   setStatus(isText ? "Reading text file…" : "Extracting document text on this server…");
   try {
     let text;
@@ -470,13 +489,18 @@ $("file-input").addEventListener("change", async (event) => {
     }
     source.value = text;
     sourceName = file.name.slice(0, 255);
+    $("project-title").value = projectTools.sourceTitle(sourceName);
+    $("download-name").value = projectTools.defaultDownloadName(sourceName);
     updateCount();
     clearDraft(); autosave();
     setStatus("Loaded " + file.name + ". Review the source text, then create a draft.", "success");
   } catch (error) {
     if (revision === importRevision) setStatus(error.message || "Could not read the selected file.", "error");
   } finally {
-    input.disabled = false;
+    if (revision === importRevision) {
+      input.disabled = false;
+      updateControls();
+    }
   }
 });
 
@@ -495,6 +519,7 @@ draftButton.addEventListener("click", async () => {
   const mode = selectedMode();
   const generating = mode === "generate";
   const revision = draftRevision;
+  const requestId = ++activeDraftRequest;
   const isCurrentDraft = () => revision === draftRevision
     && source.value === content && selectedMode() === mode;
   draftButton.disabled = true;
@@ -526,8 +551,10 @@ draftButton.addEventListener("click", async () => {
       setStatus(error.message || "The FAQ service is unavailable.", "error");
     }
   } finally {
-    draftButton.disabled = false;
-    updateModeText();
+    if (requestId === activeDraftRequest) {
+      draftButton.disabled = false;
+      updateModeText();
+    }
   }
 });
 
@@ -558,38 +585,77 @@ downloadButton.addEventListener("click", async () => {
     return;
   }
   const format = formatSelect.value;
-  downloadButton.disabled = true;
+  const filename = projectTools.downloadFilename($("download-name").value, format);
+  const revision = draftRevision;
+  const requestId = ++activeExportRequest;
+  exporting = true;
+  updateControls();
   try {
     if (["pdf", "docx"].includes(format)) {
       const response = await fetch("/api/faqs/export/" + format, {
         method: "POST", headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({title: projectTitle(), includeSources: $("include-sources").checked,
+        body: JSON.stringify({title: projectTitle(), filename, includeSources: $("include-sources").checked,
           items: items.map((item) => ({question: item.question.trim(), answer: item.answer.trim(),
             sources: item.sources.map(({section, startLine, endLine}) => ({section, startLine, endLine})),
             edited: projectTools.edited(item)}))})
       });
+      if (revision !== draftRevision) return;
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || "Export failed. Please try again.");
       }
-      downloadBlob(await response.blob(), "doc2faq-draft." + format);
+      const blob = await response.blob();
+      if (revision !== draftRevision) return;
+      downloadBlob(blob, filename);
     } else {
-      const {text, ext, mime} = exportData();
-      downloadBlob(new Blob([text], {type: mime + ";charset=utf-8"}), "doc2faq-draft." + ext);
+      const {text, mime} = exportData();
+      downloadBlob(new Blob([text], {type: mime + ";charset=utf-8"}), filename);
     }
     setStatus("Downloaded your " + format.toUpperCase() + " FAQ draft.", "success");
-  } catch (error) { setStatus(error.message || "Download unavailable.", "error"); }
-  finally { updateControls(); }
+  } catch (error) {
+    if (revision === draftRevision) setStatus(error.message || "Download unavailable.", "error");
+  } finally {
+    if (requestId === activeExportRequest) { exporting = false; updateControls(); }
+  }
 });
 
 $("project-title").addEventListener("input", autosave);
+$("download-name").addEventListener("input", autosave);
+$("download-name").addEventListener("change", () => {
+  $("download-name").value = projectTools.downloadFilename($("download-name").value, formatSelect.value).replace(/\.[^.]+$/, "");
+  autosave();
+});
+$("clear-document-btn").addEventListener("click", () => {
+  clearTimeout(saveTimer);
+  importRevision++;
+  activeExportRequest++;
+  exporting = false;
+  source.value = "";
+  sourceName = "Pasted text";
+  $("file-input").value = "";
+  $("file-input").disabled = false;
+  $("project-input").value = "";
+  $("project-title").value = "FAQ draft";
+  $("download-name").value = "document-Doc2FAQ";
+  $("include-sources").checked = false;
+  if ($("export-preview").open) $("export-preview").close();
+  $("preview-content").replaceChildren();
+  updateCount(); clearDraft();
+  try {
+    localStorage.removeItem(SAVE_KEY);
+    $("save-status").textContent = $("autosave-toggle").checked ? "Autosave on · document cleared" : "Autosave off";
+    setStatus("Document and its FAQ draft cleared. Choose a new file to start again.", "success");
+  } catch {
+    setStatus("Document cleared. Browser storage is unavailable, so its saved copy could not be cleared.", "error");
+  }
+});
 $("open-project-btn").addEventListener("click", () => $("project-input").click());
 $("choose-file-btn").addEventListener("click", () => $("file-input").click());
 $("save-project-btn").addEventListener("click", () => {
   try {
     downloadBlob(new Blob([projectTools.serialize(currentProject())], {type: "application/json;charset=utf-8"}), "doc2faq-project.json");
-    $("save-status").textContent = "Project downloaded";
-    setStatus("Project saved with source text, edits, and review choices.", "success");
+    $("save-status").textContent = "Work saved";
+    setStatus("Your source and edits are saved. Use Open saved work to continue later.", "success");
   } catch (error) { setStatus(error.message, "error"); }
 });
 $("project-input").addEventListener("change", async (event) => {
@@ -616,7 +682,7 @@ $("autosave-toggle").addEventListener("change", () => {
       localStorage.removeItem(AUTOSAVE_KEY); localStorage.removeItem(SAVE_KEY);
       $("save-status").textContent = "Autosave off";
     }
-  } catch { $("save-status").textContent = "Browser storage unavailable. Use Save project."; }
+  } catch { $("save-status").textContent = "Browser storage unavailable. Use Save work."; }
 });
 $("clear-saved-btn").addEventListener("click", () => {
   clearTimeout(saveTimer);

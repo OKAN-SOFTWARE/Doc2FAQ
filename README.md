@@ -10,12 +10,16 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
 ## New in the v0.4.0 development build
 
-- **Save / Open project:** a versioned JSON file preserves source text, title, mode, draft order, edits, original excerpts, and duplicate-review choices. Incomplete FAQs can be saved too. Project files are limited to 4 MB and validated before replacing the workspace.
-- **Optional browser autosave:** off by default. Enabling it stores the complete source and draft on this browser's origin and restores them on reload. Disabling autosave or using **Clear saved data** removes Doc2FAQ's saved data without clearing your open workspace. Storage failures leave the draft open; use **Save project** as a backup.
+- **Save work / Open saved work:** a versioned JSON file preserves source text, title, mode, draft order, edits, original excerpts, and duplicate-review choices. Incomplete FAQs can be saved too. Project files are limited to 4 MB and validated before replacing the workspace.
+- **Optional browser autosave:** off by default. Enabling it stores the complete source and draft on this browser's origin and restores them on reload. Disabling autosave or using **Clear saved data** removes Doc2FAQ's saved data without clearing your open workspace. Storage failures leave the draft open; use **Save work** as a backup.
 - **Source references:** expand **Show source** to see the original section, extracted-text line range, and exact passage. Edited questions and answers are marked for rechecking. References use text lines, not PDF page numbers; manually added FAQs have no automatic reference.
 - **Duplicate review:** distinct passages are retained even if their questions cover the same topic. Similar questions are flagged using a word-overlap heuristic. Choose **Keep both** or **Merge into this FAQ**. Merging keeps both answers and all source references; **Undo removal / merge** restores the previous items until another FAQ edit, addition, reorder, or review choice. Exact duplicate question/answer pairs are still filtered. The maximum remains 30 FAQs.
-- **PDF and Word export:** edited content, project title, readable page layout, metadata, and page numbers. Optionally include section/line references and edited-answer notices. PDF embeds DejaVu Sans (see `src/main/resources/fonts/LICENSE-DejaVu.txt`); if text contains a glyph that font cannot represent, export returns an error and suggests DOCX.
+- **PDF and Word export:** edited content, a centered document title, readable page layout, metadata, and page numbers. Optionally include section/line references and edited-answer notices. PDF embeds Lato Regular and Bold (see `src/main/resources/fonts/LICENSE-Lato.txt`); if text contains a glyph that font cannot represent, export returns an error and suggests DOCX.
 - **Export preview:** inspect the final content before downloading. PDF and Word apply their own pagination. Markdown, JSON, and standalone HTML export remain available; binary exports use **Download**.
+
+- **Clear document:** removes the loaded source, FAQ draft, file names, pending results, and its saved browser copy. The autosave preference is retained. A late import or export cannot bring back the cleared PDF.
+- **Original filenames:** importing `TEst Data.pdf` pre-fills the document title and the download name `testdata-Doc2FAQ.pdf`. Edit **Download filename** before exporting; saved work preserves that choice. Names are sanitized for Windows and the extension follows the selected format.
+- **Interactive background:** gentle particles and a cursor-responsive glow, paused while the page is hidden. Reduced-motion preferences use a still background.
 
 ## What's fixed in v0.3.1
 
@@ -180,7 +184,7 @@ The preview heading and footer display the full project version from `pom.xml`. 
 2. Select **Extract Mode** if your text already contains FAQ questions; select **Generate Mode** for a normal document with section headings.
 3. Click **Extract FAQ draft** or **Generate FAQ draft**, depending on the mode.
 4. Expand **Show source** and review each question and answer. Reorder, remove, or add entries. Review similar questions and use Undo after a removal or merge.
-5. Name your project and use **Save project** to keep the source and your edits. Use **Open project** to continue later. Optionally enable browser autosave.
+5. Set the document title printed on your FAQ and use **Save work** to keep the source and your edits. Use **Open saved work** to continue later. Optionally enable browser autosave.
 6. Choose **Markdown**, **JSON**, **HTML**, **PDF**, or **Word**, optionally include references, and inspect **Preview export**. Use **Copy** for text formats or **Download** for any format. Blank questions or answers must be completed before export.
 
 Example document for **Generate Mode**:
@@ -260,6 +264,7 @@ Export endpoints accept this shape (1–30 nonblank entries; references are opti
 {
   "title": "Team FAQ",
   "includeSources": true,
+  "filename": "team-Doc2FAQ.pdf",
   "items": [{
     "question": "Where is support?",
     "answer": "Ask in the team channel.",
@@ -269,7 +274,7 @@ Export endpoints accept this shape (1–30 nonblank entries; references are opti
 }
 ```
 
-Export references are supplied by the caller. They identify passages for human review; the export API does not independently verify their origin. Both download responses use `Cache-Control: no-store`.
+Export references are supplied by the caller. They identify passages for human review; the export API does not independently verify their origin. Both download responses use `Cache-Control: no-store`. The optional `filename` controls the attachment name; the endpoint enforces the PDF/DOCX extension. Exports omit the FAQ-count subtitle.
 
 ## Tests
 

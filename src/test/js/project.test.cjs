@@ -8,7 +8,7 @@ function fixture() {
     source: {section: "Services", startLine: 1, endLine: 2, excerpt: "## Services\nOnboarding guides."}});
   const second = project.normalizeItem({question: "Where is support?", answer: "Ask the team.",
     source: {section: "Support", startLine: 3, endLine: 4, excerpt: "## Support\nAsk the team."}});
-  return {type: "doc2faq-project", schemaVersion: 1, title: "Team FAQ", mode: "generate",
+  return {type: "doc2faq-project", schemaVersion: 1, title: "Team FAQ", downloadName: "team-Doc2FAQ", mode: "generate",
     source: {text, name: "team.md"}, items: [first, second]};
 }
 
@@ -81,4 +81,23 @@ test("merge deduplicates identical sources and rejects an answer beyond the edit
 test("references use normalized text lines including CRLF and trailing blank lines", () => {
   const data = fixture(); data.source.text = data.source.text.replace(/\n/g, "\r\n");
   assert.equal(project.validateProject(data).items.length, 2);
+});
+
+test("PDF filenames follow the original name and permit an edited download name", () => {
+  assert.equal(project.sourceTitle("TEst Data.pdf"), "TEst Data");
+  assert.equal(project.downloadFilename(project.defaultDownloadName("TEst Data.pdf"), "pdf"), "testdata-Doc2FAQ.pdf");
+  assert.equal(project.defaultDownloadName("TEst Data-Doc2FAQ.pdf"), "testdata-Doc2FAQ");
+  assert.equal(project.defaultDownloadName("Résumé Notes.DOCX"), "résuménotes-Doc2FAQ");
+  assert.equal(project.downloadFilename("My revised FAQ.pdf", "pdf"), "My revised FAQ.pdf");
+  assert.equal(project.downloadFilename("My revised FAQ", "docx"), "My revised FAQ.docx");
+  assert.equal(project.downloadFilename("", "pdf"), "document-Doc2FAQ.pdf");
+  assert.equal(project.downloadFilename("CON", "pdf"), "document-CON.pdf");
+  assert.doesNotMatch(project.downloadFilename("../bad:name\\test.pdf", "pdf"), /[/:\\]/);
+});
+
+test("older saved work remains readable and custom filenames survive save and reopen", () => {
+  const data = fixture(); delete data.downloadName;
+  assert.equal(project.validateProject(data).downloadName, "team-Doc2FAQ");
+  data.downloadName = "Client knowledge base";
+  assert.equal(project.parse(project.serialize(data)).downloadName, "Client knowledge base");
 });
