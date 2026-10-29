@@ -2,6 +2,7 @@ package com.okansoftware.doc2faq.service;
 
 import com.okansoftware.doc2faq.model.FaqItem;
 import com.okansoftware.doc2faq.model.PreviewResponse;
+import com.okansoftware.doc2faq.model.SourceReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,20 +40,26 @@ public class FaqDraftService {
         Set<String> seen = new HashSet<>();
         String question = null;
         StringBuilder answer = new StringBuilder();
+        String[] lines = content.split("\\R", -1);
+        int start = 0;
+        int end = 0;
 
-        for (String rawLine : content.split("\\R", -1)) {
+        for (int i = 0; i < lines.length; i++) {
+            String rawLine = lines[i];
             String line = rawLine.strip();
             String nextQuestion = questionFrom(line);
             if (nextQuestion != null) {
-                addIfValid(items, seen, question, answer);
+                addIfValid(items, seen, question, answer, lines, start, end);
                 question = nextQuestion;
+                start = i;
+                end = i;
                 answer.setLength(0);
                 continue;
             }
 
             // A new unrelated section ends the previous answer.
             if (line.startsWith("#")) {
-                addIfValid(items, seen, question, answer);
+                addIfValid(items, seen, question, answer, lines, start, end);
                 question = null;
                 answer.setLength(0);
                 continue;
@@ -67,10 +74,11 @@ public class FaqDraftService {
                     answer.append(' ');
                 }
                 answer.append(answerLine);
+                end = i;
             }
         }
 
-        addIfValid(items, seen, question, answer);
+        addIfValid(items, seen, question, answer, lines, start, end);
         return new PreviewResponse(List.copyOf(items), items.size(), NOTICE);
     }
 
@@ -85,12 +93,15 @@ public class FaqDraftService {
     }
 
     private static void addIfValid(List<FaqItem> items, Set<String> seen,
-                                   String question, StringBuilder answer) {
+                                   String question, StringBuilder answer, String[] lines, int start, int end) {
         if (question == null || answer.isEmpty() || items.size() >= MAX_ITEMS) {
             return;
         }
-        if (seen.add(question.toLowerCase(Locale.ROOT))) {
-            items.add(new FaqItem(question, answer.toString()));
+        String key = question.toLowerCase(Locale.ROOT) + "\n" + answer.toString().toLowerCase(Locale.ROOT);
+        if (seen.add(key)) {
+            String excerpt = String.join("\n", java.util.Arrays.copyOfRange(lines, start, end + 1));
+            items.add(new FaqItem(question, answer.toString(),
+                    new SourceReference(question, start + 1, end + 1, excerpt)));
         }
     }
 }

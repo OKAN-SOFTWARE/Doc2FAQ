@@ -1,56 +1,52 @@
 # Doc2FAQ release checklist
 
-This is the procedure for publishing **v0.3.1** from the protected `main` branch. Preparing a PR, merging fixes, and changing the Maven version do **not** replace an existing release JAR or publish a new GitHub Release.
+The development branch targets **v0.4.0** and uses `0.4.0-SNAPSHOT` until release preparation is complete. A development PR does not publish a new Release or replace the v0.3.1 JAR.
 
-## Before publishing
+## Validate the development build
 
-1. Merge the v0.3.1 release PR into `main` after the `build-and-test` check passes.
-2. Update a clean local checkout to the merged release commit:
+Use JDK 21, Maven 3.6.3+, and Node.js:
+
+```cmd
+mvn -B -ntp clean verify
+node --test src/test/js/*.test.cjs
+java -jar target/doc2faq-0.4.0-SNAPSHOT.jar
+```
+
+Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Check the packaged JAR with these steps:
+
+1. Extract explicit Markdown and Q:/A: questions. Expand Show source; verify exact excerpts and text-line ranges.
+2. Generate from multiple sections, including repeated topics with different details. Confirm distinct passages remain. Use Keep both, merge, and Undo; confirm both references survive a merge.
+3. Edit a question/answer; confirm its edited label. Remove an item and Undo. Reorder items and use search.
+4. Set a document title, use Save work, refresh, and reopen it. Confirm source, order, edited values, references, and review choices. Save and reopen an incomplete FAQ too. An invalid project must leave the workspace intact.
+5. Enable autosave, edit, wait for Saved in this browser, and reload. Confirm restore. Clear saved data and reload; confirm it is gone. Test with browser storage unavailable and use Save work as the fallback.
+6. Preview exports and download Markdown, JSON, HTML, PDF, and DOCX with edited content. Upload `TEst Data.pdf` and confirm the suggested filename is `testdata-Doc2FAQ.pdf`; rename it and check the actual download. Clear document, reload, and confirm the previous PDF and draft stay cleared. Check centered titles, Lato PDF fonts, no FAQ-count subtitle, and optional references; HTML must display document markup as text.
+7. Open PDF and Word downloads with short and long answers, Unicode text, long unbroken tokens, and page breaks. Check margins, heading placement, footer page numbers, and the final answer. Unsupported PDF glyphs must produce an error with the DOCX option.
+8. Change source/mode or open a project while a draft/file request is pending. The old response must not replace current work. Check desktop and narrow-screen controls and keyboard focus. Move the pointer to check the background; enable reduced motion and confirm it stays still.
+
+## Prepare the release commit
+
+1. Review and merge the development PR after CI and the checks above pass.
+2. Change the project version from `0.4.0-SNAPSHOT` to `0.4.0`, mark the changelog section released, and update README run commands. Review that release-preparation change.
+3. Update a clean local checkout to the merged release commit:
 
    ```cmd
    git switch main
    git pull --ff-only origin main
    git status --short
    git rev-parse HEAD
-   ```
-
-   Confirm `git status --short` is empty. Record the commit SHA; the release tag and attached JAR must correspond to this commit. Verify the project version in `pom.xml` is exactly `0.3.1` (not `0.3.1-SNAPSHOT`).
-3. Build and test with JDK 21, Maven 3.6.3+, and Node.js:
-
-   ```cmd
    mvn -B -ntp clean verify
    node --test src/test/js/*.test.cjs
+   java -jar target/doc2faq-0.4.0.jar
    ```
 
-   Continue only when both checks pass. The runnable artifact is **`target/doc2faq-0.3.1.jar`**; do not upload the `.jar.original` file or rename an older JAR.
-4. Stop any previous Doc2FAQ instance, then smoke-test the actual packaged artifact:
+4. Confirm the working tree is clean and record the exact commit SHA. Repeat the packaged-JAR smoke check. Confirm no existing v0.4.0 tag or Release exists.
 
-   ```cmd
-   java -jar target/doc2faq-0.3.1.jar
-   ```
-
-   Confirm the startup log identifies **v0.3.1**. Open `http://localhost:8080` and refresh the browser. If another application owns port 8080, use `--server.port=8081` and open `http://localhost:8081` instead. Keep this terminal open while testing; use **Ctrl+C** to stop the app.
-
-   - Extract Mode: `Q: Does this run locally?` followed by `A: Yes, without an external AI service.` on the next line produces one FAQ.
-   - Generate Mode: separate `## Client Responsibilities` and `## Provider Responsibilities` sections, each with a source paragraph, produce separate client and provider FAQs.
-   - Review: edit, reorder, remove, and add FAQ entries.
-   - Export: Markdown, JSON, and HTML downloads contain the expected edited questions and answers; HTML escapes document markup.
-5. Confirm the repository has no existing **v0.3.1** tag or Release. Keep the existing v0.3.0 tag, Release, and JAR unchanged.
-
-## Publish using GitHub
+## Publish when ready
 
 1. Open [Draft a new release](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/new).
-2. Choose **Create new tag**, enter **`v0.3.1`**, and target the recorded release commit SHA. If selecting `main`, verify its current SHA still matches the commit used to build the JAR.
-3. Use release title: **Doc2FAQ v0.3.1 — Parsing and Draft Reliability Fixes**.
-4. Copy the **0.3.1** section of [CHANGELOG.md](../CHANGELOG.md) into the Release notes. State that the fixes cover whitespace-heavy parsing, stale draft responses, and distinct client/provider responsibilities. Public-server hardening remains future work.
-5. Attach the tested **`target/doc2faq-0.3.1.jar`**. GitHub automatically supplies source-code archives; those archives do not replace the runnable JAR.
-6. Review the tag, commit, notes, and attached filename, then select **Publish release** when ready.
+2. Create tag `v0.4.0` at the exact recorded commit; title: **Doc2FAQ v0.4.0 — Review, Save & Export**.
+3. Copy the 0.4.0 changelog section into the notes. Attach the tested `target/doc2faq-0.4.0.jar`, never `.jar.original` or a renamed older JAR.
+4. Review the tag, commit, notes, and asset before publishing. Keep existing release artifacts unchanged.
+5. Download the published JAR to a separate folder, run it with Java 21, and verify the version, health, project restore, source review, and PDF/Word downloads.
 
-## Verify after publishing
-
-- Confirm [Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases) includes **v0.3.1**, its tag points to the recorded release commit, and the downloadable asset is **`doc2faq-0.3.1.jar`**.
-- Verify the GitHub Actions check for the tag, if triggered, completes successfully.
-- Download the attached JAR to a separate folder, run it with Java 21, and confirm the startup version, health endpoint, and client/provider generation behavior.
-- Leave subscriptions, accounts, PDF/DOCX exports, and public-hosting hardening for separate changes.
-
-**License:** MIT · Copyright © 2026 Okan Tiktas.
+Accounts, billing, OCR, optional external AI, and public-server hardening remain separate work. This build is intended for local use.
