@@ -25,7 +25,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> malformedJson() {
         return ResponseEntity.badRequest()
-                .body(new ApiError("INVALID_JSON", "Provide a JSON object containing document text"));
+                .body(new ApiError("INVALID_JSON", "Provide a valid JSON object for this request"));
     }
 
     @ExceptionHandler(DocumentException.class)

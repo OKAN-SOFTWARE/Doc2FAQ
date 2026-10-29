@@ -20,7 +20,7 @@ function pendingDraft() {
   let complete;
   let fail;
   const response = new Promise((resolve, reject) => { complete = resolve; fail = reject; });
-  const context = {document: {getElementById: element}, fetch: () => response};
+  const context = {Doc2FaqProject: require("../../main/resources/static/project.js"), document: {getElementById: element}, fetch: () => response};
   // Keep the actual event handlers and export controls; these tests do not need card layout.
   vm.runInNewContext(withoutBoot + "\nrender = () => updateControls();", context);
   element("source-text").value = "Q: Old question?\nA: Old answer.";

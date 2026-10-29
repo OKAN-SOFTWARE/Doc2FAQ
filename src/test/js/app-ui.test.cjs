@@ -9,7 +9,7 @@ const source = readFileSync(scriptPath, "utf8");
 
 // This app has no frontend dependencies. Test the actual export functions with tiny DOM stubs.
 const stub = () => ({value: "extract", addEventListener() {}});
-const context = {document: {getElementById: stub}};
+const context = {Doc2FaqProject: require("../../main/resources/static/project.js"), document: {getElementById: stub}};
 const withoutBoot = source.replace(/updateModeText\(\);\s*updateCount\(\);\s*render\(\);\s*$/, "");
 vm.runInNewContext(withoutBoot +
   "\nglobalThis.exportsUnderTest = {" +

@@ -2,11 +2,20 @@
 
 **Turn documents into editable FAQ drafts — locally, with full control over the answers.**
 
-Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or upload TXT, Markdown, PDF, or DOCX, then extract existing questions or create source-grounded suggestions from ordinary document sections. Review, edit, reorder, and export your results as **Markdown, JSON, or HTML**.
+Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or upload TXT, Markdown, PDF, or DOCX, then extract existing questions or create source-grounded suggestions from ordinary document sections. Review source excerpts, edit and reorder your FAQs, save a project, and export as **Markdown, JSON, HTML, PDF, or Word (DOCX)**.
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-> **Source version: v0.3.1.** The version in `pom.xml` identifies this build. For published tags, release downloads, and announcements, see [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases). This source version does not by itself publish a GitHub Release.
+> **Development version: v0.4.0-SNAPSHOT.** The version in `pom.xml` identifies this build. For published tags, release downloads, and announcements, see [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases). This source version does not by itself publish a GitHub Release.
+
+## New in the v0.4.0 development build
+
+- **Save / Open project:** a versioned JSON file preserves source text, title, mode, draft order, edits, original excerpts, and duplicate-review choices. Incomplete FAQs can be saved too. Project files are limited to 4 MB and validated before replacing the workspace.
+- **Optional browser autosave:** off by default. Enabling it stores the complete source and draft on this browser's origin and restores them on reload. Disabling autosave or using **Clear saved data** removes Doc2FAQ's saved data without clearing your open workspace. Storage failures leave the draft open; use **Save project** as a backup.
+- **Source references:** expand **Show source** to see the original section, extracted-text line range, and exact passage. Edited questions and answers are marked for rechecking. References use text lines, not PDF page numbers; manually added FAQs have no automatic reference.
+- **Duplicate review:** distinct passages are retained even if their questions cover the same topic. Similar questions are flagged using a word-overlap heuristic. Choose **Keep both** or **Merge into this FAQ**. Merging keeps both answers and all source references; **Undo removal / merge** restores the previous items until another FAQ edit, addition, reorder, or review choice. Exact duplicate question/answer pairs are still filtered. The maximum remains 30 FAQs.
+- **PDF and Word export:** edited content, project title, readable page layout, metadata, and page numbers. Optionally include section/line references and edited-answer notices. PDF embeds DejaVu Sans (see `src/main/resources/fonts/LICENSE-DejaVu.txt`); if text contains a glyph that font cannot represent, export returns an error and suggests DOCX.
+- **Export preview:** inspect the final content before downloading. PDF and Word apply their own pagination. Markdown, JSON, and standalone HTML export remain available; binary exports use **Download**.
 
 ## What's fixed in v0.3.1
 
@@ -26,7 +35,7 @@ The document placeholder now uses neutral Q&A prompts, and Generate Mode's sampl
 - **Consistent 50,000-character limit** across document extraction, the browser, and both FAQ API endpoints.
 - **Windows CMD setup** for people who don't have Java or Maven installed, plus troubleshooting.
 
-**Privacy and accuracy:** The current Generate Mode is **deterministic and rule-based, not a generative AI model**. No API key, paid AI service, or external model is required. Its questions are suggestions; answers come from excerpts in your source document. Topic-based duplicate filtering can sometimes suppress distinct details within a topic. It cannot reliably interpret every layout or guarantee an accurate summary. Always review before publishing.
+**Privacy and accuracy:** The current Generate Mode is **deterministic and rule-based, not a generative AI model**. No API key, paid AI service, or external model is required. Its questions are suggestions; answers come from excerpts in your source document. Similar-question flags are suggestions and can include questions you want to keep. It cannot reliably interpret every layout or guarantee an accurate summary. Always review before publishing.
 
 For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklist, see [docs/RELEASING.md](docs/RELEASING.md).
 
@@ -150,7 +159,7 @@ After updating your checkout to the latest `main`, run these commands from the d
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.3.1.jar
+java -jar target/doc2faq-0.4.0-SNAPSHOT.jar
 ```
 
 The JavaScript checks require Node.js. Keep the terminal open while the app runs, and use **Ctrl+C** to stop it. Open **http://localhost:8080** and refresh the browser to load the updated frontend.
@@ -158,7 +167,7 @@ The JavaScript checks require Node.js. Keep the terminal open while the app runs
 If port 8080 is occupied, stop the previous Doc2FAQ process or use an alternate port:
 
 ```cmd
-java -jar target/doc2faq-0.3.1.jar --server.port=8081
+java -jar target/doc2faq-0.4.0-SNAPSHOT.jar --server.port=8081
 ```
 
 Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.
@@ -170,8 +179,9 @@ The preview heading and footer display the full project version from `pom.xml`. 
 1. Paste your document's text or choose a `.txt`, `.md`, `.pdf`, or `.docx` file.
 2. Select **Extract Mode** if your text already contains FAQ questions; select **Generate Mode** for a normal document with section headings.
 3. Click **Extract FAQ draft** or **Generate FAQ draft**, depending on the mode.
-4. Review and edit each question and answer. Use arrows to reorder, **Remove** to delete, and **Add FAQ** to add an entry.
-5. Choose **Markdown**, **JSON**, or **HTML**, then **Copy** or **Download**. Blank questions or answers must be completed before export.
+4. Expand **Show source** and review each question and answer. Reorder, remove, or add entries. Review similar questions and use Undo after a removal or merge.
+5. Name your project and use **Save project** to keep the source and your edits. Use **Open project** to continue later. Optionally enable browser autosave.
+6. Choose **Markdown**, **JSON**, **HTML**, **PDF**, or **Word**, optionally include references, and inspect **Preview export**. Use **Copy** for text formats or **Download** for any format. Blank questions or answers must be completed before export.
 
 Example document for **Generate Mode**:
 
@@ -193,7 +203,7 @@ The team provides onboarding guides and a shared knowledge base.
 Members share guides on document organization and clear technical writing.
 ```
 
-Generate Mode preserves explicit FAQ pairs, then suggests questions for additional sections while filtering repeated common topics and boilerplate appendix headings. The answer text is sourced from the document. Generated question phrasing is heuristic; this is *not* legal advice or an automated contract interpretation service.
+Generate Mode preserves explicit FAQ pairs and suggests questions for additional sections. Exact duplicate pairs and boilerplate appendix headings are filtered; distinct passages remain available for review. The answer text is sourced from the document. Generated question phrasing is heuristic; this is *not* legal advice or an automated contract interpretation service.
 
 ## Formats and limits
 
@@ -203,6 +213,8 @@ Generate Mode preserves explicit FAQ pairs, then suggests questions for addition
 | PDF | Text extraction using Apache PDFBox | 5 MB upload, 50 pages, 50,000 extracted characters |
 | DOCX | Text extraction using Apache POI | 5 MB upload, 50,000 extracted characters |
 | FAQ drafts | Local rules based on source text | Maximum 30 suggested/extracted pairs |
+| Project files | Validated JSON, read in the browser | 4 MB, 30 FAQs, 50,000 source characters |
+| Exports | Text formats in browser; PDF/DOCX on the server | Title 200 characters; question 500; answer 50,000; combined FAQ text 300,000 |
 
 The server checks file signatures, not just extensions. Empty, corrupted, password-protected, and unsupported documents are rejected with clear errors. **Scanned/image-only PDFs require OCR**, which this version does not provide. Complex tables and multi-column layouts can lead to imperfect text order; inspect the extracted text before drafting.
 
@@ -214,6 +226,8 @@ The server checks file signatures, not just extensions. Empty, corrupted, passwo
 | POST | `/api/documents/extract` | Multipart PDF/DOCX to extracted text |
 | POST | `/api/faqs/preview` | Extract explicit questions and answers |
 | POST | `/api/faqs/generate` | Suggest source-grounded FAQs using local rules |
+| POST | `/api/faqs/export/pdf` | Validated FAQ JSON to downloadable PDF |
+| POST | `/api/faqs/export/docx` | Validated FAQ JSON to downloadable Word document |
 
 Both FAQ endpoints take JSON input:
 
@@ -226,7 +240,12 @@ Response format:
 ```json
 {
   "items": [
-    {"question": "What services are included?", "answer": "Website monitoring and software maintenance."}
+    {
+      "question": "What services are included?",
+      "answer": "Website monitoring and software maintenance.",
+      "source": {"section": "Services", "startLine": 1, "endLine": 2,
+                 "excerpt": "## Services\nWebsite monitoring and software maintenance."}
+    }
   ],
   "count": 1,
   "notice": "..."
@@ -235,6 +254,23 @@ Response format:
 
 The `/api/faqs/preview` endpoint deliberately returns zero results if there are no complete, explicit Q&A pairs. The `/api/faqs/generate` endpoint can produce a conservative draft from ordinary text, even without headings.
 
+Export endpoints accept this shape (1–30 nonblank entries; references are optional):
+
+```json
+{
+  "title": "Team FAQ",
+  "includeSources": true,
+  "items": [{
+    "question": "Where is support?",
+    "answer": "Ask in the team channel.",
+    "edited": false,
+    "sources": [{"section": "Support", "startLine": 1, "endLine": 2}]
+  }]
+}
+```
+
+Export references are supplied by the caller. They identify passages for human review; the export API does not independently verify their origin. Both download responses use `Cache-Control: no-store`.
+
 ## Tests
 
 ```bash
@@ -242,7 +278,7 @@ mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
 ```
 
-GitHub Actions automatically runs the Java and JavaScript checks on pushes and pull requests. Tests cover both modes, whitespace-heavy parsing, stale responses and errors, distinct client/provider topics, FAQ appendix/title exclusions, document import errors, API validation, output limits, and export safety. The frontend tests require Node.js and have no npm dependencies.
+GitHub Actions automatically runs the Java and JavaScript checks on pushes and pull requests. Tests cover both modes, exact source references, preservation of distinct passages, stale responses, document import errors, project round trips and invalid files, merge behavior, API validation, Unicode exports, PDF pagination, and export safety. The frontend tests require Node.js and have no npm dependencies.
 
 ## Troubleshooting
 
@@ -258,7 +294,7 @@ GitHub Actions automatically runs the Java and JavaScript checks on pushes and p
 
 ## Security and privacy
 
-Doc2FAQ currently has **no accounts, billing, rate limiting, or permanent draft storage**. PDF/DOCX files are processed for the request and are not intentionally saved by the app, though the web server may use temporary multipart buffering. TXT/Markdown are read in the browser and submitted as text when you generate a draft. Editing and exporting happen in the browser; drafts disappear when the page is reloaded.
+Doc2FAQ currently has **no accounts, billing, rate limiting, or server-side draft storage**. PDF/DOCX files are processed for the request and are not intentionally saved by the app, though the web server may use temporary multipart buffering. TXT/Markdown are read in the browser and submitted as text when you generate a draft. Editing, project saves, and text-format exports happen in the browser. PDF/DOCX export sends the edited FAQ content and reference labels to this server for an in-memory download. With autosave off, unsaved drafts disappear on reload. Downloaded project files and optional browser autosave contain source text; clear saved data on shared devices when finished.
 
 This is a **local development application**, not a hardened internet-facing service. Before offering paid or public document processing, add authentication, rate limiting, isolated document parsing, malware scanning, HTTPS, audit/monitoring, and retention policies. Do not process confidential material on an untrusted server.
 
@@ -266,6 +302,6 @@ This is a **local development application**, not a hardened internet-facing serv
 
 MIT · Copyright © 2026 **Okan Tiktas**.
 
-## Planned enhancements
+## Later releases
 
-- PDF and DOCX FAQ export with page layout, fonts, document metadata, and validation tests (not included in this version).
+Optional AI generation with explicit opt-in and token/cost limits, OCR, and account/subscription workflows are outside the v0.4.0 development scope. See [docs/RELEASING.md](docs/RELEASING.md) for the validation and release process.

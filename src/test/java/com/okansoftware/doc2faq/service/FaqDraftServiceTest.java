@@ -44,16 +44,18 @@ class FaqDraftServiceTest {
     }
 
     @Test
-    void skipsEmptyAnswersAndDeduplicatesQuestions() {
+    void skipsEmptyAnswersAndKeepsDistinctAnswersForReview() {
         PreviewResponse result = service.preview("""
                 ## How does this work?
                 First answer.
                 ## How does this work?
-                Duplicate answer.
+                Different answer.
+                ## How does this work?
+                First answer.
                 ## What is missing?
                 # Unrelated section
                 """);
-        assertEquals(1, result.count());
+        assertEquals(2, result.count());
         assertEquals("First answer.", result.items().get(0).answer());
     }
 

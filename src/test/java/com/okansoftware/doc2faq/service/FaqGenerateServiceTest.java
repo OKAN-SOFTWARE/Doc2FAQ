@@ -100,7 +100,7 @@ class FaqGenerateServiceTest {
     }
 
     @Test
-    void demoAgreementKeepsExplicitFaqAndOnlyAddsNewTopics() {
+    void demoAgreementKeepsDistinctDetailsForDuplicateReview() {
         PreviewResponse result = service.generate("""
                 SOFTWARE MAINTENANCE AGREEMENT
                 DEMONSTRATION DOCUMENT | FICTIONAL PARTIES | NOT FOR SIGNATURE
@@ -141,15 +141,15 @@ class FaqGenerateServiceTest {
                 A: Fifteen days' written notice.
                 """);
 
-        assertEquals(8, result.count()); // Five explicit + three distinct suggestions.
+        assertEquals(12, result.count()); // Five explicit + seven source sections.
         assertEquals("What services are included?", result.items().get(0).question());
         assertEquals("What responsibilities does the client have under the agreement?",
-                result.items().get(5).question());
-        assertEquals("Who owns the work and deliverables?", result.items().get(7).question());
+                result.items().get(8).question());
+        assertEquals("Who owns the work and deliverables?", result.items().get(10).question());
         assertTrue(result.items().stream().noneMatch(item ->
                 item.question().contains("SOFTWARE MAINTENANCE AGREEMENT")
                         || item.question().contains("APPENDIX A")));
-        assertEquals(1, result.items().stream()
+        assertEquals(2, result.items().stream()
                 .filter(item -> item.question().toLowerCase().contains("terminat")).count());
         assertTrue(result.notice().contains("duplicate"));
     }
@@ -216,7 +216,7 @@ class FaqGenerateServiceTest {
     }
 
     @Test
-    void explicitClientFaqOnlySuppressesDuplicateClientSuggestions() {
+    void explicitClientFaqPreservesDistinctClientAndProviderSourceDetails() {
         PreviewResponse result = service.generate("""
                 ## Client Responsibilities
                 The client supplies backups.
@@ -226,22 +226,24 @@ class FaqGenerateServiceTest {
                 Q: What responsibilities does the client have under the agreement?
                 A: The client retains backups.
                 """);
-        assertEquals(2, result.count());
+        assertEquals(3, result.count());
         assertEquals("The client retains backups.", result.items().getFirst().answer());
         assertEquals("What responsibilities does the provider have under the agreement?",
-                result.items().get(1).question());
-        assertEquals("The provider patches software.", result.items().get(1).answer());
+                result.items().get(2).question());
+        assertEquals("The provider patches software.", result.items().get(2).answer());
     }
 
     @Test
-    void stillDeduplicatesRepeatedResponsibilitiesForTheSameParty() {
+    void keepsDistinctPassagesForTheSameParty() {
         PreviewResponse result = service.generate("""
                 ## Provider Responsibilities
                 The provider patches software.
                 ## Provider Obligations
                 The provider monitors uptime.
+                ## Provider Responsibilities
+                The provider patches software.
                 """);
-        assertEquals(1, result.count());
+        assertEquals(2, result.count());
     }
 
     @Test

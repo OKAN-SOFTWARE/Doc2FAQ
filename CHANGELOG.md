@@ -8,6 +8,24 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 
 - Show the full build version in the preview heading and footer, populated from `pom.xml` during the Maven build so future releases stay in sync.
 
+## 0.4.0 (unreleased)
+
+### Added
+
+- Versioned project files that save/reopen source text, title, FAQ edits/order, original excerpts, and review choices, including incomplete entries.
+- Optional browser autosave/restore with clear saved data controls; saving is off by default.
+- Exact source excerpts and extracted-text line references for both drafting modes, with edited-answer labels.
+- Similar-question review, keep/merge controls, and undo for removals/merges. Merges retain the original references.
+- PDF and DOCX downloads with title metadata, page numbers, Unicode font support, optional references, and validated input limits.
+- Safe content preview and configurable titles for all exports.
+- Project/schema/merge tests, source-reference tests, and export API tests for Unicode, pagination, validation, and unsupported PDF glyphs.
+
+### Changed
+
+- Distinct answers under the same topic or question are retained for manual review instead of silently discarded. Exact question/answer duplicates remain filtered; the draft cap remains 30.
+- Answer editing now supports up to 50,000 characters, consistent with imported text.
+- Pending draft results are invalidated when draft entries are edited, added, moved, removed, merged, or restored. Delayed file imports cannot replace newer source/project changes.
+
 ## 0.3.1
 
 ### Fixed

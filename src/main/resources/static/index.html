@@ -7,6 +7,7 @@
   <meta name="description" content="Doc2FAQ extracts existing Q&A or builds source-grounded FAQ suggestions from TXT, Markdown, PDF, and DOCX. Review, edit, and export.">
   <title>Doc2FAQ — Clear answers start here</title>
   <link rel="stylesheet" href="/styles.css">
+  <script src="/project.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
@@ -43,6 +44,20 @@
           <div><p class="eyebrow">YOUR WORKSPACE</p><h2>From source to structure.</h2></div>
           <span class="step-number">01 — 02</span>
         </div>
+        <div class="project-toolbar">
+          <div class="project-name">
+            <label for="project-title" class="field-label">PROJECT TITLE</label>
+            <input id="project-title" type="text" maxlength="200" value="FAQ draft">
+          </div>
+          <button type="button" id="save-project-btn" class="button button-secondary">Save project</button>
+          <button type="button" id="open-project-btn" class="button button-secondary">Open project</button>
+          <input id="project-input" type="file" accept=".json,application/json" hidden>
+          <div class="autosave-controls">
+            <label><input id="autosave-toggle" type="checkbox"> Autosave source and drafts in this browser</label>
+            <button type="button" id="clear-saved-btn" class="button button-quiet">Clear saved data</button>
+            <span id="save-status" role="status" aria-live="polite">Autosave off</span>
+          </div>
+        </div>
         <div class="workspace-grid">
           <section class="panel input-panel" aria-labelledby="input-title">
             <div class="panel-top"><div><span class="step-label">STEP 01</span><h3 id="input-title">Add your document</h3></div><span class="file-symbol" aria-hidden="true">↳</span></div>
@@ -58,7 +73,7 @@
             <div class="input-meta"><span id="char-count">0 / 50,000 characters</span><span>UTF-8 text</span></div>
             <div class="actions">
               <button type="button" id="generate-btn" class="button button-primary">Extract FAQ draft <span aria-hidden="true">↗</span></button>
-              <label class="button button-secondary file-button" for="file-input">Choose file</label>
+              <button type="button" id="choose-file-btn" class="button button-secondary">Choose file</button>
               <input id="file-input" type="file" accept=".txt,.md,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
               <button type="button" id="sample-btn" class="button button-quiet">Load example</button>
             </div>
@@ -76,13 +91,19 @@
                 <option value="markdown">Markdown</option>
                 <option value="json">JSON</option>
                 <option value="html">HTML</option>
+                <option value="pdf">PDF</option>
+                <option value="docx">Word (.docx)</option>
               </select>
               <button type="button" id="copy-btn" class="button button-secondary" disabled>Copy</button>
               <button type="button" id="download-btn" class="button button-secondary" disabled>Download .md</button>
             </div>
             <div class="review-toolbar">
-              <span>Edit answers and reorder items before sharing</span>
+              <button type="button" id="undo-btn" class="button button-quiet" disabled>Undo removal / merge</button>
               <button type="button" id="add-item-btn" class="button button-quiet">+ Add FAQ</button>
+            </div>
+            <div class="export-options">
+              <label><input id="include-sources" type="checkbox"> Include source references in exports</label>
+              <button type="button" id="preview-btn" class="button button-quiet" disabled>Preview export</button>
             </div>
             <div id="results" class="results-list" aria-live="polite">
               <div class="empty-state">
@@ -97,10 +118,15 @@
 
       <aside class="footnote">
         <div class="footnote-icon" aria-hidden="true">i</div>
-        <p><strong>Good to know.</strong> Both modes use deterministic, source-grounded rules—not an external AI model. Generate Mode suggests questions but cannot understand every document reliably. PDF/Word extraction runs in memory; scanned PDFs need OCR, which is not included. No documents or drafts are intentionally saved on the server. Review every answer before publishing.</p>
+        <p><strong>Good to know.</strong> Both modes use local rules with no AI calls. Source references point to lines in the extracted text. Review the original excerpts and check edited answers before sharing. Scanned PDFs need OCR, which is not included. Project downloads contain your source text. Optional autosave stores that text and your drafts in this browser; use Clear saved data to remove it. Documents and drafts are not intentionally saved on the server.</p>
       </aside>
     </main>
     <footer class="site-footer"><span>© 2026 Okan Tiktas</span><span>Doc2FAQ · v@project.version@ · Built for clarity</span></footer>
   </div>
+  <dialog id="export-preview" aria-labelledby="preview-title">
+    <div class="preview-header"><h2 id="preview-title">Export preview</h2><button type="button" id="close-preview-btn" class="button button-secondary">Close preview</button></div>
+    <p class="preview-note">Content preview. PDF and Word downloads apply their own page layout.</p>
+    <article id="preview-content"></article>
+  </dialog>
 </body>
 </html>

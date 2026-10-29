@@ -2,8 +2,8 @@ package com.okansoftware.doc2faq.service;
 
 import com.okansoftware.doc2faq.model.FaqItem;
 import com.okansoftware.doc2faq.model.PreviewResponse;
+import com.okansoftware.doc2faq.model.SourceReference;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -26,7 +26,7 @@ public class FaqGenerateService {
     private static final Pattern ALL_CAPS_HEADING = Pattern.compile("^[\\p{Lu}][\\p{Lu}\\p{N} /&(),.'–-]{2,79}:?$");
     private static final Pattern TITLE_CASE_HEADING = Pattern.compile("^[\\p{Lu}][\\p{L}\\p{N} /&(),.'–-]{2,59}:?$");
     private static final String NOTICE = "Generated locally from source passages using deterministic rules. "
-            + "Common duplicate topics and FAQ appendices are filtered. No AI service is used. "
+            + "Exact duplicate passages and FAQ appendices are filtered; similar questions remain for review. No AI service is used. "
             + "Verify and edit every question and answer before sharing.";
 
     private final FaqDraftService extractor;
@@ -44,12 +44,9 @@ public class FaqGenerateService {
         }
 
         List<FaqItem> items = new ArrayList<>(extractor.preview(content).items());
-        Set<String> seen = new HashSet<>();
-        Set<Topic> seenTopics = EnumSet.noneOf(Topic.class);
+        Set<String> seenPassages = new HashSet<>();
         for (FaqItem item : items) {
-            seen.add(item.question().toLowerCase(Locale.ROOT));
-            Topic topic = topicForQuestion(item.question());
-            if (topic != Topic.OTHER) seenTopics.add(topic);
+            seenPassages.add(item.question().toLowerCase(Locale.ROOT) + "\n" + item.answer().strip().toLowerCase(Locale.ROOT));
         }
 
         for (Section section : splitSections(content)) {
@@ -61,43 +58,47 @@ public class FaqGenerateService {
                     || isBoilerplateHeading(section.heading)) {
                 continue;
             }
-            Topic topic = topicForHeading(section.heading);
-            // Preserve all explicit pairs, but do not propose the same subject again.
-            if (topic != Topic.OTHER && seenTopics.contains(topic)) {
-                continue;
-            }
-            String question = questionFor(section.heading);
-            if (seen.add(question.toLowerCase(Locale.ROOT))) {
-                items.add(new FaqItem(question, excerpt(passage)));
-                if (topic != Topic.OTHER) seenTopics.add(topic);
+            String answer = excerpt(passage);
+            if (seenPassages.add(questionFor(section.heading).toLowerCase(Locale.ROOT) + "\n" + passage.toLowerCase(Locale.ROOT))) {
+                items.add(new FaqItem(questionFor(section.heading), answer,
+                        new SourceReference(section.heading, section.startLine, section.endLine,
+                                section.original.substring(0, section.original.length() - 1))));
             }
         }
 
         // Conservative fallback for documents without recognizable sections.
         if (items.isEmpty()) {
             String passage = content.strip().replaceAll("\\s+", " ");
-            items.add(new FaqItem("What information does this document provide?", excerpt(passage)));
+            items.add(new FaqItem("What information does this document provide?", excerpt(passage),
+                    new SourceReference("Document", 1, content.split("\\R", -1).length,
+                            String.join("\n", content.split("\\R", -1)))));
         }
         return new PreviewResponse(List.copyOf(items), items.size(), NOTICE);
     }
 
     private static List<Section> splitSections(String content) {
         List<Section> sections = new ArrayList<>();
-        Section current = new Section("Overview");
-        for (String raw : content.split("\\R", -1)) {
+        Section current = new Section("Overview", 1);
+        String[] lines = content.split("\\R", -1);
+        for (int i = 0; i < lines.length; i++) {
+            String raw = lines[i];
             String line = raw.strip();
             if (line.isBlank()) {
                 if (!current.body.isEmpty()) current.body.append(' ');
+                current.original.append(raw).append('\n');
+                current.endLine = i + 1;
                 continue;
             }
             String heading = headingOf(line);
             if (heading != null) {
                 if (!current.body.toString().isBlank()) sections.add(current);
-                current = new Section(heading);
+                current = new Section(heading, i + 1);
             } else {
                 if (!current.body.isEmpty()) current.body.append(' ');
                 current.body.append(line);
             }
+            current.original.append(raw).append('\n');
+            current.endLine = i + 1;
         }
         if (!current.body.toString().isBlank()) sections.add(current);
         return sections;
@@ -151,57 +152,6 @@ public class FaqGenerateService {
                 || (h.endsWith(" contract") && !h.contains("term"));
     }
 
-    private static Topic topicForHeading(String heading) {
-        String h = heading.toLowerCase(Locale.ROOT);
-        if (h.contains("terminat") || h.contains("cancellat")) return Topic.TERMINATION;
-        if (h.contains("payment") || h.contains("invoic")) return Topic.PAYMENT;
-        if (h.contains("fee") || h.contains("pricing") || h.contains("cost")) return Topic.FEES;
-        if (h.contains("responsibilit") || h.contains("obligation")) return responsibilityTopic(h);
-        if (h.contains("ownership") || h.contains("intellectual property")) return Topic.OWNERSHIP;
-        if (h.contains("confidential")) return Topic.CONFIDENTIALITY;
-        if (h.contains("scope") || h.contains("service")) return Topic.SERVICES;
-        if (h.equals("term") || h.contains("duration") || h.contains("agreement term")
-                || h.contains("effective date")) return Topic.TERM;
-        if (h.contains("summary")) return Topic.SUMMARY;
-        if (h.contains("skill") || h.contains("technolog")) return Topic.SKILLS;
-        if (h.contains("experience")) return Topic.EXPERIENCE;
-        if (h.contains("education")) return Topic.EDUCATION;
-        return Topic.OTHER;
-    }
-
-    /** Uses recognizable question intent, not exact string equality. */
-    private static Topic topicForQuestion(String question) {
-        String q = question.toLowerCase(Locale.ROOT);
-        if (q.contains("terminat") || q.contains("cancel")
-                || q.contains("end the agreement")) return Topic.TERMINATION;
-        if (q.contains("when is payment") || q.contains("payment due")
-                || q.contains("invoice") || q.contains("how are payments")) return Topic.PAYMENT;
-        if (q.contains("fee") || q.contains("pricing") || q.contains("price")
-                || q.contains("cost")) return Topic.FEES;
-        if (q.contains("responsibilit") || q.contains("obligation")) return responsibilityTopic(q);
-        if (q.contains("ownership") || q.contains("owns the work") || q.contains("deliverables"))
-            return Topic.OWNERSHIP;
-        if (q.contains("confidential")) return Topic.CONFIDENTIALITY;
-        if (q.contains("agreement begin") || q.contains("engagement begin")
-                || q.contains("agreement last") || q.contains("effective date")
-                || q.contains("agreement term") || q.contains("duration")) return Topic.TERM;
-        if (q.contains("service") || q.contains("maintenance hours")
-                || q.contains("scope of work")) return Topic.SERVICES;
-        if (q.contains("professional background")) return Topic.SUMMARY;
-        if (q.contains("skill") || q.contains("technolog")) return Topic.SKILLS;
-        if (q.contains("experience")) return Topic.EXPERIENCE;
-        if (q.contains("education")) return Topic.EDUCATION;
-        return Topic.OTHER;
-    }
-
-    private static Topic responsibilityTopic(String text) {
-        // Separate parties so an explicit or generated client FAQ cannot hide
-        // the provider's distinct obligations (and vice versa).
-        if (text.contains("client") && !text.contains("provider")) return Topic.CLIENT_RESPONSIBILITIES;
-        if (text.contains("provider") && !text.contains("client")) return Topic.PROVIDER_RESPONSIBILITIES;
-        return Topic.RESPONSIBILITIES;
-    }
-
     private static String questionFor(String heading) {
         String h = heading.toLowerCase(Locale.ROOT);
         if (h.contains("termination") || h.contains("cancellation"))
@@ -237,12 +187,6 @@ public class FaqGenerateService {
         return "What information is provided about " + heading + "?";
     }
 
-    private enum Topic {
-        SERVICES, TERM, FEES, PAYMENT, TERMINATION, RESPONSIBILITIES,
-        CLIENT_RESPONSIBILITIES, PROVIDER_RESPONSIBILITIES,
-        OWNERSHIP, CONFIDENTIALITY, SUMMARY, SKILLS, EXPERIENCE, EDUCATION, OTHER
-    }
-
     private static String excerpt(String passage) {
         if (passage.length() <= MAX_ANSWER_CHARS) return passage;
         int boundary = passage.lastIndexOf(' ', MAX_ANSWER_CHARS - 1);
@@ -253,9 +197,14 @@ public class FaqGenerateService {
     private static final class Section {
         private final String heading;
         private final StringBuilder body = new StringBuilder();
+        private final StringBuilder original = new StringBuilder();
+        private final int startLine;
+        private int endLine;
 
-        private Section(String heading) {
+        private Section(String heading, int startLine) {
             this.heading = heading;
+            this.startLine = startLine;
+            this.endLine = startLine;
         }
     }
 }
