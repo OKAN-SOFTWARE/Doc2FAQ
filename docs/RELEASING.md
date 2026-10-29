@@ -1,15 +1,15 @@
 # Doc2FAQ release checklist
 
-The development branch targets **v0.4.0** and uses `0.4.0-SNAPSHOT` until release preparation is complete. A development PR does not publish a new Release or replace the v0.3.1 JAR.
+The release version is **v0.4.0**. The release commit uses `0.4.0` in `pom.xml`; earlier development builds used `0.4.0-SNAPSHOT`. Merging source changes alone does not publish a GitHub Release or update an already downloaded JAR.
 
-## Validate the development build
+## Validate the release build
 
 Use JDK 21, Maven 3.6.3+, and Node.js:
 
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.4.0-SNAPSHOT.jar
+java -jar target/doc2faq-0.4.0.jar
 ```
 
 Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Check the packaged JAR with these steps:
@@ -45,8 +45,8 @@ Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Check th
 
 1. Open [Draft a new release](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/new).
 2. Create tag `v0.4.0` at the exact recorded commit; title: **Doc2FAQ v0.4.0 — Review, Save & Export**.
-3. Copy the 0.4.0 changelog section into the notes. Attach the tested `target/doc2faq-0.4.0.jar`, never `.jar.original` or a renamed older JAR.
+3. Copy the 0.4.0 changelog section into the notes. Attach the tested `target/doc2faq-0.4.0.jar`, never `.jar.original` or a renamed older JAR. Also attach `Doc2FAQ-0.4.0-Windows.zip` containing that same JAR, `Start-Doc2FAQ.cmd`, and a quick-start README, plus `SHA256SUMS.txt` for both downloads. Confirm the launcher references `doc2faq-0.4.0.jar` and neither the ZIP nor its instructions reference the snapshot build.
 4. Review the tag, commit, notes, and asset before publishing. Keep existing release artifacts unchanged.
-5. Download the published JAR to a separate folder, run it with Java 21, and verify the version, health, project restore, source review, and PDF/Word downloads.
+5. Download the published JAR and ZIP to a separate folder, verify their hashes against `SHA256SUMS.txt`, and confirm that the JAR inside the ZIP matches the standalone JAR. Run it with Java 21 and verify the version, health, project restore, source review, and PDF/Word downloads.
 
 Accounts, billing, OCR, optional external AI, and public-server hardening remain separate work. This build is intended for local use.
