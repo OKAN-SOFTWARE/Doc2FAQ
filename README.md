@@ -6,9 +6,9 @@ Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or uplo
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-> **Current version: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
+> **Latest published download: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
 
-## In development: v0.5.0 — Source & Review
+## Current source: v0.5.0-SNAPSHOT — Source & Review
 
 - **Source beside answer:** select **View source beside answer** on an FAQ to highlight all of its original passages in a read-only document viewer beside the review editor on desktop (stacked on smaller screens). References still use extracted-text lines, not PDF page numbers. Manual FAQs have no automatic reference.
 - **Review status:** FAQs start as **Needs review**. Mark a complete answer **Approved** after checking it. Editing its question or answer, or merging FAQs, returns it to **Needs review**. Moving an item preserves approval; Undo restores the status from before a removal or merge.
@@ -49,6 +49,12 @@ The document placeholder now uses neutral Q&A prompts, and Generate Mode's sampl
 - **Windows CMD setup** for people who don't have Java or Maven installed, plus troubleshooting.
 
 **Privacy and accuracy:** The current Generate Mode is **deterministic and rule-based, not a generative AI model**. No API key, paid AI service, or external model is required. Its questions are suggestions; answers come from excerpts in your source document. Similar-question flags are suggestions and can include questions you want to keep. It cannot reliably interpret every layout or guarantee an accurate summary. Always review before publishing.
+
+## Try it in your browser
+
+[Open the interactive browser demo](https://okantiktas.com/projects/doc2faq/) · [Source & Review user guide](docs/USER-GUIDE.md) · [Demo capabilities and deployment](docs/WEB-DEMO.md)
+
+The demo processes pasted text and TXT/Markdown in your browser, using simplified rules. Try both drafting modes, source highlighting, editing, approval status, duplicate review, search/filters, saved projects, and Markdown/JSON/HTML exports. PDF/Word imports and exports require the downloadable Java app; the demo does not run a public Java backend. The development demo may include features newer than the latest release download.
 
 For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklist, see [docs/RELEASING.md](docs/RELEASING.md).
 
@@ -196,9 +202,12 @@ The preview heading and footer display the full project version from `pom.xml`. 
 1. Paste your document's text or choose a `.txt`, `.md`, `.pdf`, or `.docx` file.
 2. Select **Extract Mode** if your text already contains FAQ questions; select **Generate Mode** for a normal document with section headings.
 3. Click **Extract FAQ draft** or **Generate FAQ draft**, depending on the mode.
-4. Expand **Show source** and review each question and answer. Reorder, remove, or add entries. Review similar questions and use Undo after a removal or merge.
-5. Set the document title printed on your FAQ and use **Save work** to keep the source and your edits. Use **Open saved work** to continue later. Optionally enable browser autosave.
-6. Choose **Markdown**, **JSON**, **HTML**, **PDF**, or **Word**, optionally include references, and inspect **Preview export**. Use **Copy** for text formats or **Download** for any format. Blank questions or answers must be completed before export.
+4. Select **View source beside answer** to highlight original passages beside the editor on desktop (above it on mobile). You can also expand **Show source** for individual excerpts. Typing preserves the source viewer's scroll position; selecting a source explicitly reveals its highlighted passage.
+5. Edit and verify each FAQ, then change its status from **Needs review** to **Approved**. Blank entries cannot be approved. Editing either field or merging resets approval; moving an FAQ preserves it.
+6. Combine the question/answer search with the **All statuses**, **Needs review**, or **Approved** filter. Read the visible and review counts; use **Clear filters** to restore the list. Filters do not restrict saved projects, previews, or exports.
+7. Reorder, remove, or add FAQs. Review similar questions, choose Keep both or merge, and use Undo immediately after a removal/merge if needed. Review status changes clear that undo history too.
+8. Set the document title and use **Save work** to keep source, edits, order, references, duplicate decisions, and review status. **Open saved work** resumes a project. Optional autosave is off by default. New schema-2 project files require v0.5 or later; schema-1 files open with Needs review defaults.
+9. Choose **Markdown**, **JSON**, **HTML**, **PDF**, or **Word**, optionally include references, and inspect **Preview export**. Use **Copy** for text formats or **Download** for any format. All FAQs are included, even if filtered out. Any blank question or answer blocks export; approval is a review aid and is not required to export.
 
 Example document for **Generate Mode**:
 
@@ -230,7 +239,8 @@ Generate Mode preserves explicit FAQ pairs and suggests questions for additional
 | PDF | Text extraction using Apache PDFBox | 5 MB upload, 50 pages, 50,000 extracted characters |
 | DOCX | Text extraction using Apache POI | 5 MB upload, 50,000 extracted characters |
 | FAQ drafts | Local rules based on source text | Maximum 30 suggested/extracted pairs |
-| Project files | Validated JSON, read in the browser | 4 MB, 30 FAQs, 50,000 source characters |
+| Project files | Validated JSON, read in the browser; schema 1 reads, schema 2 saves | 4 MB, 30 FAQs, 50,000 source characters |
+| Review status | Browser workspace and project saves | Needs review / Approved; complete FAQs only for approval |
 | Exports | Text formats in browser; PDF/DOCX on the server | Title 200 characters; question 500; answer 50,000; combined FAQ text 300,000 |
 
 The server checks file signatures, not just extensions. Empty, corrupted, password-protected, and unsupported documents are rejected with clear errors. **Scanned/image-only PDFs require OCR**, which this version does not provide. Complex tables and multi-column layouts can lead to imperfect text order; inspect the extracted text before drafting.
@@ -245,6 +255,8 @@ The server checks file signatures, not just extensions. Empty, corrupted, passwo
 | POST | `/api/faqs/generate` | Suggest source-grounded FAQs using local rules |
 | POST | `/api/faqs/export/pdf` | Validated FAQ JSON to downloadable PDF |
 | POST | `/api/faqs/export/docx` | Validated FAQ JSON to downloadable Word document |
+
+**Review state is client-side:** approval status, search, and filters are not API parameters. Project JSON preserves approval status; finished FAQ JSON exports contain content and optional references, rather than the full workspace.
 
 Both FAQ endpoints take JSON input:
 
@@ -294,9 +306,10 @@ Export references are supplied by the caller. They identify passages for human r
 ```bash
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
+node scripts/build-web-demo.mjs
 ```
 
-GitHub Actions automatically runs the Java and JavaScript checks on pushes and pull requests. Tests cover both modes, exact source references, preservation of distinct passages, stale responses, document import errors, project round trips and invalid files, merge behavior, API validation, Unicode exports, PDF pagination, and export safety. The frontend tests require Node.js and have no npm dependencies.
+GitHub Actions automatically runs the Java and JavaScript checks on pushes and pull requests. Tests cover both modes, exact source references, preservation of distinct passages, stale responses, document import errors, project round trips and invalid files, merge behavior, API validation, Unicode exports, PDF pagination, and export safety. They also cover approval restore/reset, legacy project migration, combined filters, source-viewer scroll preservation, and browser-demo drafting rules. The frontend tests require Node.js and have no npm dependencies.
 
 ## Troubleshooting
 
@@ -306,6 +319,10 @@ GitHub Actions automatically runs the Java and JavaScript checks on pushes and p
 | `'mvn' is not recognized` | Run the temporary PATH command above, reopen CMD after permanent PATH setup, or use the full `mvn.cmd` path |
 | Maven selects the wrong Java version | Check `mvn -version` and set `JAVA_HOME` to your JDK 21 installation |
 | `No complete Q&A pairs found` | Switch from **Extract Mode** to **Generate Mode**, or format existing pairs as Markdown question headings |
+| No FAQs visible after filtering | Use **Clear filters**; the draft and its export still include every FAQ |
+| Approval changes after editing | Expected: edited or merged content returns to Needs review |
+| Saved project will not open in v0.4 | Schema-2 projects need v0.5 or later; keep the original schema-1 file when using older releases |
+| PDF/Word unavailable on the website demo | Use the local Java app; the browser demo supports text formats only |
 | Scanned PDF fails | The file is image-only; run OCR outside Doc2FAQ first |
 | Port 8080 already in use | Stop the other program or start Doc2FAQ with port 9090 |
 | Maven downloads fail | Check internet access, proxy configuration, corporate restrictions, and the Maven Central repository |
@@ -322,4 +339,4 @@ MIT · Copyright © 2026 **Okan Tiktas**.
 
 ## Later releases
 
-Optional AI generation with explicit opt-in and token/cost limits, OCR, and account/subscription workflows are outside the v0.4.0 scope. See [docs/RELEASING.md](docs/RELEASING.md) for the validation and release process.
+Optional AI generation with explicit opt-in and token/cost limits, OCR, and account/subscription workflows are outside the current v0.5.0 scope. See [docs/RELEASING.md](docs/RELEASING.md) for the validation and release process.
