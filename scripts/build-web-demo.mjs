@@ -1,6 +1,7 @@
 import {readFile, writeFile, mkdir, copyFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root, 'demo-dist');
 const source = path.join(root, 'src/main/resources/static');
@@ -40,4 +41,9 @@ await writeFile(path.join(output, 'app.js'), app);
 for (const file of ['project.js', 'background.js', 'styles.css']) await copyFile(path.join(source, file), path.join(output, file));
 await copyFile(path.join(root, 'web-demo/engine.js'), path.join(output, 'engine.js'));
 await writeFile(path.join(output, 'styles.css'), (await readFile(path.join(output, 'styles.css'), 'utf8')) + '\n.demo-links{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 18px}.demo-links .button-primary{flex:0 1 auto}.demo-disclosure{color:var(--muted);font-size:13px;line-height:1.7;margin-bottom:30px}.demo-disclosure a{color:var(--mint)}\n');
+for (const file of ['app.js', 'engine.js', 'project.js', 'background.js', 'styles.css']) {
+  const digest = createHash('sha256').update(await readFile(path.join(output, file))).digest('hex').slice(0, 12);
+  html = html.replaceAll('./' + file + '"', './' + file + '?v=' + digest + '"');
+}
+await writeFile(path.join(output, 'index.html'), html);
 console.log('Built browser demo at ' + output);

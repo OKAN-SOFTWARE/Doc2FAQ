@@ -27,7 +27,7 @@ node --test src/test/js/*.test.cjs
 node scripts/build-web-demo.mjs
 ```
 
-The builder creates ignored `demo-dist/` from the actual app frontend, shared project validator, stylesheet, and background. It replaces backend requests with the browser-only adapter in `web-demo/engine.js`, limits uploads to TXT/Markdown, removes binary export choices, uses relative asset paths, fills the source-build version, and adds demo disclosure and homepage/source/download links. It does not modify the Java application's served UI.
+The builder creates ignored `demo-dist/` from the actual app frontend, shared project validator, stylesheet, and background. It replaces backend requests with the browser-only adapter in `web-demo/engine.js`, limits uploads to TXT/Markdown, removes binary export choices, uses relative asset paths with content-hash cache versions, fills the source-build version, and adds demo disclosure and homepage/source/download links. It does not modify the Java application's served UI.
 
 Copy the complete contents of `demo-dist/` into `projects/doc2faq/` in the private `OKAN-SOFTWARE/okantiktas.com` repository. Preserve relative filenames. Update the Doc2FAQ homepage card to the demo route. Keep `/project/doc2faq/index.html` as a redirect with a visible fallback link. Do not replace the rest of the portfolio or its activity scripts.
 
