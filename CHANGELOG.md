@@ -5,6 +5,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 ## [0.5.0] — Unreleased
 
 ### Added
+- Browser PDF/Word (.docx) import and paginated export with local processing, PDF page/file/text limits, bounded DOCX XML decompression, optional references, and clear unsupported-file/font errors.
 - Browser-only website demo built from the shared frontend, with simplified text drafting, explicit PDF/Word limitations, homepage navigation, and text exports.
 - Source & Review user guide and current documentation for development builds, schema compatibility, and v0.5.0 release preparation.
 - Read-only source viewer highlighting the selected FAQ's exact original passages, with a stacked layout on narrow screens.
