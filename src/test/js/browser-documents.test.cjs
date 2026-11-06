@@ -54,3 +54,24 @@ test('PDF line wrapping preserves blank lines and splits long tokens within the 
   assert.ok(lines.every(line=>line.length<=20)); assert.ok(lines.includes(''));
   assert.equal(lines.slice(0,3).join(''),'a'.repeat(51));
 });
+
+test('Word Heading 1 becomes a section the browser generator can draft from', () => {
+  const {draft} = require('../../../web-demo/engine.js');
+  const text = tools.headingPrefix('Heading1') + 'Services\nOnboarding guides.\n' + tools.headingPrefix('Heading2') + 'Support\nAsk the team.';
+  const result = draft(text, 'generate');
+  assert.equal(result.count,2);
+  assert.equal(result.items[0].answer,'Onboarding guides.');
+  assert.equal(tools.headingPrefix('Title'),'');
+  assert.equal(tools.headingPrefix('Heading6'),'###### ');
+});
+
+test('contiguous PDF fragments keep words intact while positioned word gaps get spaces', async () => {
+  const fragments = [
+    {str:'Doc',width:18,transform:[12,0,0,12,50,100]},
+    {str:'2FAQ',width:28,transform:[12,0,0,12,68,100]},
+    {str:'works',width:30,transform:[12,0,0,12,102,100]},
+    {str:' well',width:25,transform:[12,0,0,12,132,100],hasEOL:true}
+  ];
+  const pdfjs={getDocument(){return {promise:Promise.resolve({numPages:1,getPage:async()=>({getTextContent:async()=>({items:fragments}),cleanup(){}})}),destroy:async()=>{}};}};
+  assert.equal(await tools.extractPdf(new TextEncoder().encode('%PDF-1.7'),pdfjs),'Doc2FAQ works well');
+});
