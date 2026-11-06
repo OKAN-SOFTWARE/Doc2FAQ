@@ -23,3 +23,6 @@ jobs:
 
       - name: Test browser export safety
         run: node --test src/test/js/*.test.cjs
+
+      - name: Build static browser demo
+        run: node scripts/build-web-demo.mjs

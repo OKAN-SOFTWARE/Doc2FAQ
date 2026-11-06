@@ -1,46 +1,37 @@
 # Doc2FAQ release checklist
 
-The release version is **v0.4.0**. The release commit uses `0.4.0` in `pom.xml`; earlier development builds used `0.4.0-SNAPSHOT`. Merging source changes alone does not publish a GitHub Release or update an already downloaded JAR.
+**Current source:** `0.5.0-SNAPSHOT`. **Latest published download:** v0.4.0. The next planned release is **v0.5.0 — Source & Review**. Merging source changes does not publish a release or update an installed JAR. Keep existing tags and assets unchanged.
 
-## v0.5.0 development checks
-
-The next development version is `0.5.0-SNAPSHOT`; use `target/doc2faq-0.5.0-SNAPSHOT.jar` when testing a source build. The v0.4.0 publishing instructions below describe the existing release; update the release version and notes before publishing v0.5.0.
-
-Before preparing v0.5.0:
-
-1. Select an FAQ's source viewer and check every highlighted passage, including multiple references after merge. Try a manual FAQ and a document containing HTML-like text. Check desktop side-by-side and mobile stacked layouts.
-2. Approve a complete FAQ; edit its question or answer and confirm it needs review again. Confirm blank FAQs cannot be approved. Remove/Undo and reorder approved FAQs.
-3. Combine search and status filters, edit a matching FAQ, check counts, and clear filters. Add an FAQ while filtering and confirm it is visible.
-4. Save/reopen and autosave/reload approvals; import a schema-1 project and confirm Needs review defaults. Reject malformed review states without replacing the workspace.
-5. With filters active, preview and export all five formats. Confirm all FAQs remain included in draft order; a hidden blank entry must still prevent export.
-6. Run the Java and JavaScript checks below and smoke-test the packaged JAR.
-
-## Validate the release build
+## Validate the development build
 
 Use JDK 21, Maven 3.6.3+, and Node.js:
 
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.4.0.jar
+node scripts/build-web-demo.mjs
+java -jar target/doc2faq-0.5.0-SNAPSHOT.jar
 ```
 
-Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Check the packaged JAR with these steps:
+Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Test the packaged JAR, not only a static frontend preview:
 
-1. Extract explicit Markdown and Q:/A: questions. Expand Show source; verify exact excerpts and text-line ranges.
-2. Generate from multiple sections, including repeated topics with different details. Confirm distinct passages remain. Use Keep both, merge, and Undo; confirm both references survive a merge.
-3. Edit a question/answer; confirm its edited label. Remove an item and Undo. Reorder items and use search.
-4. Set a document title, use Save work, refresh, and reopen it. Confirm source, order, edited values, references, and review choices. Save and reopen an incomplete FAQ too. An invalid project must leave the workspace intact.
-5. Enable autosave, edit, wait for Saved in this browser, and reload. Confirm restore. Clear saved data and reload; confirm it is gone. Test with browser storage unavailable and use Save work as the fallback.
-6. Preview exports and download Markdown, JSON, HTML, PDF, and DOCX with edited content. Upload `TEst Data.pdf` and confirm the suggested filename is `testdata-Doc2FAQ.pdf`; rename it and check the actual download. Clear document, reload, and confirm the previous PDF and draft stay cleared. Check centered titles, Lato PDF fonts, no FAQ-count subtitle, and optional references; HTML must display document markup as text.
-7. Open PDF and Word downloads with short and long answers, Unicode text, long unbroken tokens, and page breaks. Check margins, heading placement, footer page numbers, and the final answer. Unsupported PDF glyphs must produce an error with the DOCX option.
-8. Change source/mode or open a project while a draft/file request is pending. The old response must not replace current work. Check desktop and narrow-screen controls and keyboard focus. Move the pointer to check the background; enable reduced motion and confirm it stays still.
+1. Import TXT, Markdown, PDF, and DOCX. Extract explicit questions and generate from ordinary sections; inspect exact excerpts and text-line ranges. Scanned PDFs must explain the OCR limitation.
+2. Select an FAQ's source viewer and check all highlights, including multiple references after merge. Try a manual FAQ and HTML-like source text. Check desktop side-by-side and mobile stacked layouts. Typing in questions/answers must preserve page and source scroll positions.
+3. Approve complete FAQs, then edit each field or merge and confirm Needs review. Blank entries cannot be approved. Move an approved FAQ and confirm approval remains. Remove/Undo restores status and references.
+4. Combine question/answer search and review filters. Check visible/approved/pending counts, live edits, Clear filters, and adding a blank FAQ while filtered. Filters must not restrict saving or exporting.
+5. Use Keep both, merge, and Undo on similar questions. Preserve distinct passages and all references; newer edits or review decisions must clear stale undo history.
+6. Save/reopen a complete and incomplete project. Verify source, filename, title, mode, order, edits, original excerpts, duplicate choices, and review status. Schema-1 files upgrade; new saves use schema 2. Invalid states and mismatched references leave the workspace intact.
+7. Enable autosave, edit, wait for Saved in this browser, and reload. Clear saved data leaves the workspace open; Clear document removes source, draft, names, pending results, and its saved copy. Test blocked browser storage and use Save work as fallback.
+8. With filters active, preview/download Markdown, JSON, HTML, PDF, and Word. Every FAQ remains included in draft order; a hidden incomplete entry blocks export. Verify edited values and optional references. Finished FAQ JSON is not a full project save.
+9. Import `TEst Data.pdf`, check the suggested `testdata-Doc2FAQ.pdf`, rename it, and verify the download. Check centered titles, PDF Lato fonts, page numbers, long answers/tokens, Unicode, and page breaks. Unsupported PDF glyphs must suggest Word. HTML must escape document markup.
+10. Change source/mode, clear the document, or open another project during pending imports/drafting/exports. Old results must not replace or download current work. Check keyboard focus, mobile widths, and reduced motion.
+11. Follow [WEB-DEMO.md](WEB-DEMO.md) for the separate static browser demo; verify its feature disclosure and website links. The demo cannot substitute for packaged-JAR testing.
 
-## Prepare the release commit
+## Prepare v0.5.0
 
-1. Review and merge the development PR after CI and the checks above pass.
-2. Change the project version from `0.4.0-SNAPSHOT` to `0.4.0`, mark the changelog section released, and update README run commands. Review that release-preparation change.
-3. Update a clean local checkout to the merged release commit:
+1. Review and merge development changes after CI and packaged-JAR checks pass.
+2. Change `pom.xml` from `0.5.0-SNAPSHOT` to `0.5.0`; date the changelog section and update README source/run commands and download links. Keep historical v0.4.0 notes accurate. Review this release-preparation change.
+3. Update a clean checkout to the merged release commit, then build again:
 
    ```cmd
    git switch main
@@ -49,17 +40,19 @@ Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Check th
    git rev-parse HEAD
    mvn -B -ntp clean verify
    node --test src/test/js/*.test.cjs
-   java -jar target/doc2faq-0.4.0.jar
+   node scripts/build-web-demo.mjs
+   java -jar target/doc2faq-0.5.0.jar
    ```
 
-4. Confirm the working tree is clean and record the exact commit SHA. Repeat the packaged-JAR smoke check. Confirm no existing v0.4.0 tag or Release exists.
+4. Confirm a clean working tree and record the exact SHA. Repeat the packaged-JAR smoke check. Confirm that v0.5.0 does not already exist as a tag or release.
 
-## Publish when ready
+## Publish tested artifacts
 
 1. Open [Draft a new release](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/new).
-2. Create tag `v0.4.0` at the exact recorded commit; title: **Doc2FAQ v0.4.0 — Review, Save & Export**.
-3. Copy the 0.4.0 changelog section into the notes. Attach the tested `target/doc2faq-0.4.0.jar`, never `.jar.original` or a renamed older JAR. Also attach `Doc2FAQ-0.4.0-Windows.zip` containing that same JAR, `Start-Doc2FAQ.cmd`, and a quick-start README, plus `SHA256SUMS.txt` for both downloads. Confirm the launcher references `doc2faq-0.4.0.jar` and neither the ZIP nor its instructions reference the snapshot build.
-4. Review the tag, commit, notes, and asset before publishing. Keep existing release artifacts unchanged.
-5. Download the published JAR and ZIP to a separate folder, verify their hashes against `SHA256SUMS.txt`, and confirm that the JAR inside the ZIP matches the standalone JAR. Run it with Java 21 and verify the version, health, project restore, source review, and PDF/Word downloads.
+2. Tag the exact tested commit `v0.5.0`; title **Doc2FAQ v0.5.0 — Source & Review**.
+3. Copy the v0.5.0 changelog notes. Attach the tested `target/doc2faq-0.5.0.jar`, never `.jar.original` or a renamed old JAR.
+4. Also attach `Doc2FAQ-0.5.0-Windows.zip` with that exact JAR, `Start-Doc2FAQ.cmd`, and a quick-start README. The launcher must reference `doc2faq-0.5.0.jar`. Include `SHA256SUMS.txt` for both downloads; remove snapshot and older-version instructions from the new bundle.
+5. Review tag, commit, notes, and assets before publishing. Download the published assets separately, verify hashes and that the ZIP's JAR matches the standalone JAR, then run with Java 21. Confirm version, health, saved review status, source viewer, and PDF/Word exports.
+6. Rebuild/synchronize the website demo when its shared frontend changes. Verify the actual live route and update the portfolio link if needed.
 
-Accounts, billing, OCR, optional external AI, and public-server hardening remain separate work. This build is intended for local use.
+Accounts, billing, OCR, external AI, and public-server hardening remain separate work. The Java build is intended for local use; the static browser demo runs its simplified drafting on visitors' devices.
