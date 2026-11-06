@@ -44,7 +44,9 @@
         const phrasing = {services: 'What services are included?', support: 'Where can I get support?',
           'team responsibilities': 'What are the team responsibilities?', 'knowledge sharing': 'How is knowledge shared?',
           'technical skills': 'Which skills and technologies are listed?'};
-        add(phrasing[label.toLowerCase()] || 'What should I know about ' + label + '?', heading.i, finish, body);
+        const suggestion = Object.hasOwn(phrasing, label.toLowerCase())
+          ? phrasing[label.toLowerCase()] : 'What should I know about ' + label + '?';
+        add(suggestion, heading.i, finish, body);
       }
       if (!headings.length && !items.length) {
         let first = lines.findIndex(line => line.trim()), last = lines.length - 1;

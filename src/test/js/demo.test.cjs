@@ -43,3 +43,13 @@ test('HTML-like document text remains source text in the demo result', () => {
   const result = draft('Q: What?\nA: <script>alert(1)</script>', 'extract');
   assert.equal(result.items[0].answer, '<script>alert(1)</script>');
 });
+
+test('unrecognized headings use string fallback even when named like Object properties', () => {
+  const text = '## Constructor\nFirst detail.\n## __proto__\nSecond detail.\n## toString\nThird detail.\n## Services\nOnboarding.';
+  const result = draft(text, 'generate');
+  assert.equal(result.count, 4);
+  assert.equal(result.items[0].question, 'What should I know about Constructor?');
+  assert.equal(result.items[1].question, 'What should I know about __proto__?');
+  assert.equal(result.items[2].question, 'What should I know about toString?');
+  assert.equal(result.items[3].question, 'What services are included?');
+});
