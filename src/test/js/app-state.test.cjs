@@ -227,3 +227,104 @@ test("clearing during a PDF export prevents an old document download", async () 
   assert.equal(app.element("faq-count").textContent, "0 ITEMS");
   assert.match(app.element("status").textContent, /cleared/);
 });
+
+
+test("approvals persist through autosave and reset when an answer or question changes", async () => {
+  const app = harness(); await makeDraft(app);
+  app.element("autosave-toggle").checked = true; app.element("autosave-toggle").handlers.change();
+  let select = descendants(app.element("results")).find(node => node.className === "review-status-select");
+  select.value = "approved"; select.handlers.change();
+  const restored = harness(app.saved);
+  assert.match(restored.element("review-summary").textContent, /1 approved/);
+  const answer = descendants(restored.element("results")).find(node => node.tag === "textarea");
+  answer.value = "Updated answer."; answer.handlers.input();
+  assert.match(restored.element("review-summary").textContent, /0 approved/);
+  select = descendants(restored.element("results")).find(node => node.className === "review-status-select");
+  select.value = "approved"; select.handlers.change();
+  const question = descendants(restored.element("results")).find(node => node.className === "faq-edit-question");
+  question.value = "New question?"; question.handlers.input();
+  assert.equal(select.value, "needs-review");
+  assert.equal(JSON.parse(restored.saved.get("doc2faq.project.v1")).items[0].reviewStatus, "needs-review");
+});
+
+test("search and review filters combine without changing exports or losing typed edits", async () => {
+  const app = harness(); await makeDraft(app);
+  app.element("add-item-btn").handlers.click();
+  const cards = descendants(app.element("results")).filter(node => node.className === "faq-editor");
+  const select = descendants(cards[0]).find(node => node.className === "review-status-select");
+  select.value = "approved"; select.handlers.change();
+  app.element("review-filter").value = "approved"; app.element("review-filter").handlers.change();
+  assert.equal(cards[0].hidden, false); assert.equal(cards[1].hidden, true);
+  app.element("search-input").value = "TEAM"; app.element("search-input").handlers.input();
+  assert.match(app.element("review-summary").textContent, /1 of 2/);
+  const answer = descendants(cards[0]).find(node => node.tag === "textarea");
+  answer.value = "New answer without the search term."; answer.handlers.input();
+  assert.equal(cards[0].hidden, true);
+  app.element("clear-filters-btn").handlers.click();
+  assert.equal(cards[0].hidden, false); assert.equal(cards[1].hidden, false);
+  assert.equal(answer.value, "New answer without the search term.");
+  // The incomplete hidden FAQ still blocks export; filters never remove it from the draft.
+  assert.equal(app.element("download-btn").disabled, true);
+  assert.equal(app.element("faq-count").textContent, "2 ITEMS");
+});
+
+test("blank FAQs cannot be approved and new entries remain visible after filtering", async () => {
+  const app = harness(); await makeDraft(app);
+  app.element("review-filter").value = "approved"; app.element("review-filter").handlers.change();
+  app.element("add-item-btn").handlers.click();
+  assert.equal(app.element("review-filter").value, "all");
+  const selects = descendants(app.element("results")).filter(node => node.className === "review-status-select");
+  selects[1].value = "approved"; selects[1].handlers.change();
+  assert.equal(selects[1].value, "needs-review");
+  assert.match(app.element("status").textContent, /Complete/);
+});
+
+test("source viewer highlights exact passages and closes when the selected FAQ disappears", async () => {
+  const app = harness(); await makeDraft(app);
+  descendants(app.element("results")).find(node => node.textContent === "View source beside answer").handlers.click();
+  assert.equal(app.element("source-viewer").hidden, false);
+  const highlighted = descendants(app.element("source-viewer-content")).filter(node => node.tag === "mark");
+  assert.equal(highlighted.length, 2);
+  assert.equal(highlighted[1].textContent, "A: Ask the team.");
+  app.element("search-input").value = "No match"; app.element("search-input").handlers.input();
+  assert.equal(app.element("source-viewer").hidden, true);
+  app.element("clear-filters-btn").handlers.click();
+  assert.equal(app.element("source-viewer").hidden, false);
+  app.element("clear-document-btn").handlers.click();
+  assert.equal(app.element("source-viewer").hidden, true);
+  assert.equal(app.element("source-viewer-content").children.length, 0);
+});
+
+test("manual FAQs show an explicit no-reference notice in the source viewer", async () => {
+  const app = harness(); app.element("add-item-btn").handlers.click();
+  descendants(app.element("results")).find(node => node.textContent === "View source beside answer").handlers.click();
+  assert.match(app.element("source-viewer-note").textContent, /no automatic source reference/);
+  assert.equal(descendants(app.element("source-viewer-content")).filter(node => node.tag === "mark").length, 0);
+});
+
+test("editing FAQs preserves source viewer nodes and scroll; only explicit selection scrolls passages", async () => {
+  const app = harness(); await makeDraft(app);
+  const content = app.element("source-viewer-content");
+  let passageScrolls = 0;
+  content.querySelector = () => ({scrollIntoView() { passageScrolls++; }});
+  const open = descendants(app.element("results")).find(node => node.textContent === "View source beside answer");
+  open.handlers.click();
+  assert.equal(passageScrolls, 1);
+  const originalRows = [...content.children];
+  content.scrollTop = 125;
+  for (const className of ["faq-edit-answer", "faq-edit-question"]) {
+    const field = descendants(app.element("results")).find(node => node.className === className);
+    field.value = "Updated text"; field.handlers.input();
+    assert.equal(content.children[0], originalRows[0]);
+    assert.equal(content.scrollTop, 125);
+    assert.equal(passageScrolls, 1);
+  }
+  const select = descendants(app.element("results")).find(node => node.className === "review-status-select");
+  select.value = "approved"; select.handlers.change();
+  assert.equal(content.children[0], originalRows[0]);
+  assert.equal(passageScrolls, 1);
+  open.handlers.click();
+  assert.equal(passageScrolls, 2);
+  app.element("close-source-btn").handlers.click();
+  assert.equal(content.children.length, 0);
+});

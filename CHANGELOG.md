@@ -2,6 +2,19 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
+## [0.5.0] — Unreleased
+
+### Added
+- Read-only source viewer highlighting the selected FAQ's exact original passages, with a stacked layout on narrow screens.
+- Per-FAQ Needs review / Approved status, persisted in saved projects and optional browser autosave.
+- Combined question/answer search and review-status filters, visible result counts, and Clear filters.
+
+### Changed
+- Editing questions or answers and merging FAQs reset approval; incomplete FAQs cannot be approved.
+- Project schema 2 stores review status and upgrades schema-1 projects with Needs review defaults. Older application versions reject schema-2 files instead of silently discarding approval state.
+- Filters affect only the review list; saving, export preview, and all export formats retain every FAQ in draft order.
+- Development version is 0.5.0-SNAPSHOT; v0.4.0 remains the published release.
+
 ## 0.4.0 — 2026-10-29
 
 ### Added

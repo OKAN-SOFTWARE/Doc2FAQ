@@ -16,7 +16,8 @@
       originalQuestion: item.originalQuestion ?? item.question,
       originalAnswer: item.originalAnswer ?? item.answer,
       sources: item.sources || (item.source ? [item.source] : []),
-      keptWith: item.keptWith || [], edited: item.edited === true
+      keptWith: item.keptWith || [], edited: item.edited === true,
+      reviewStatus: item.reviewStatus === "approved" ? "approved" : "needs-review"
     };
   }
   function edited(item) {
@@ -38,8 +39,8 @@
     return (stem || "document-Doc2FAQ") + "." + ext;
   }
   function validateProject(project) {
-    if (!project || project.type !== "doc2faq-project" || project.schemaVersion !== 1) {
-      fail("Choose a supported Doc2FAQ project file (schema version 1).");
+    if (!project || project.type !== "doc2faq-project" || ![1, 2].includes(project.schemaVersion)) {
+      fail("Choose a supported Doc2FAQ project file (schema version 1 or 2).");
     }
     const title = string(project.title, 200, "project title");
     if (!["extract", "generate"].includes(project.mode)) fail("Invalid project mode.");
@@ -75,12 +76,15 @@
       });
       if (!Array.isArray(raw.keptWith) || raw.keptWith.length > 30 ||
           raw.keptWith.some((value) => typeof value !== "string" || value.length > 100)) fail("Invalid review choices.");
-      return {id: itemId, question, answer, originalQuestion, originalAnswer, sources,
+      const reviewStatus = raw.reviewStatus ?? "needs-review";
+      if (!["needs-review", "approved"].includes(reviewStatus)) fail("Invalid FAQ review status.");
+      if (reviewStatus === "approved" && (!question.trim() || !answer.trim())) fail("Complete an FAQ before approving it.");
+      return {id: itemId, question, answer, originalQuestion, originalAnswer, sources, reviewStatus,
         keptWith: [...raw.keptWith], edited: raw.edited === true};
     });
     if (answerCharacters > 300000) fail("FAQ text must not exceed 300,000 characters.");
     for (const item of items) item.keptWith = item.keptWith.filter((key) => ids.has(key) && key !== item.id);
-    return {type: "doc2faq-project", schemaVersion: 1, title, downloadName, mode: project.mode, source: {text, name}, items};
+    return {type: "doc2faq-project", schemaVersion: 2, title, downloadName, mode: project.mode, source: {text, name}, items};
   }
   function serialize(project) {
     const text = JSON.stringify(validateProject(project), null, 2) + "\n";
@@ -119,7 +123,7 @@
           saved.excerpt === source.excerpt)) sources.push({...source});
     }
     if (sources.length > 30) fail("The merged FAQ would have too many source references.");
-    return {...first, answer, sources, keptWith: [], edited: true};
+    return {...first, answer, sources, keptWith: [], edited: true, reviewStatus: "needs-review"};
   }
   const api = {MAX_PROJECT_BYTES, normalizeItem, edited, sourceTitle, defaultDownloadName, downloadFilename,
     validateProject, serialize, parse, similar, related, merge};

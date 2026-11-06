@@ -8,7 +8,7 @@ function fixture() {
     source: {section: "Services", startLine: 1, endLine: 2, excerpt: "## Services\nOnboarding guides."}});
   const second = project.normalizeItem({question: "Where is support?", answer: "Ask the team.",
     source: {section: "Support", startLine: 3, endLine: 4, excerpt: "## Support\nAsk the team."}});
-  return {type: "doc2faq-project", schemaVersion: 1, title: "Team FAQ", downloadName: "team-Doc2FAQ", mode: "generate",
+  return {type: "doc2faq-project", schemaVersion: 2, title: "Team FAQ", downloadName: "team-Doc2FAQ", mode: "generate",
     source: {text, name: "team.md"}, items: [first, second]};
 }
 
@@ -27,7 +27,7 @@ test("project round trip preserves source, order, incomplete edits and original 
 test("rejects malformed, oversized and unsupported project files", () => {
   assert.throws(() => project.parse("{"), /valid JSON/);
   assert.throws(() => project.parse(" ".repeat(project.MAX_PROJECT_BYTES + 1)), /4 MB/);
-  assert.throws(() => project.parse(JSON.stringify({...fixture(), schemaVersion: 2})), /supported/);
+  assert.throws(() => project.parse(JSON.stringify({...fixture(), schemaVersion: 99})), /supported/);
   const data = fixture(); data.items[0].answer = "x".repeat(50001);
   assert.throws(() => project.serialize(data), /answer/);
 });
@@ -100,4 +100,28 @@ test("older saved work remains readable and custom filenames survive save and re
   assert.equal(project.validateProject(data).downloadName, "team-Doc2FAQ");
   data.downloadName = "Client knowledge base";
   assert.equal(project.parse(project.serialize(data)).downloadName, "Client knowledge base");
+});
+
+
+test("v0.4 projects upgrade to schema 2 with all FAQs needing review", () => {
+  const data = fixture(); data.schemaVersion = 1;
+  for (const item of data.items) delete item.reviewStatus;
+  const restored = project.parse(JSON.stringify(data));
+  assert.equal(restored.schemaVersion, 2);
+  assert.ok(restored.items.every(item => item.reviewStatus === "needs-review"));
+  assert.equal(data.items[0].reviewStatus, undefined);
+});
+
+test("review approvals survive saved projects, with invalid states rejected", () => {
+  const data = fixture(); data.items[0].reviewStatus = "approved";
+  assert.equal(project.parse(project.serialize(data)).items[0].reviewStatus, "approved");
+  data.items[0].reviewStatus = "unknown";
+  assert.throws(() => project.serialize(data), /review status/);
+  data.items[0].reviewStatus = "approved"; data.items[0].answer = " ";
+  assert.throws(() => project.serialize(data), /Complete an FAQ/);
+});
+
+test("merging approved FAQs returns the combined answer to needs review", () => {
+  const data = fixture(); data.items.forEach(item => item.reviewStatus = "approved");
+  assert.equal(project.merge(...data.items).reviewStatus, "needs-review");
 });

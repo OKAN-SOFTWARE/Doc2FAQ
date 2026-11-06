@@ -78,6 +78,11 @@
             </div>
             <p id="source-filename" class="source-filename">No document loaded</p>
             <textarea id="source-text" maxlength="50000" spellcheck="false" placeholder="Q: How can I organize my notes?&#10;A: Use clear headings and group related topics.&#10;&#10;Q: What makes a helpful answer?&#10;A: Keep it clear, concise, and based on the source."></textarea>
+            <section id="source-viewer" class="source-viewer" aria-labelledby="source-viewer-title" hidden>
+              <div class="source-viewer-heading"><h4 id="source-viewer-title">Original source</h4><button type="button" id="close-source-btn" class="button button-quiet">Close source view</button></div>
+              <p id="source-viewer-note" class="field-help"></p>
+              <div id="source-viewer-content" class="source-viewer-content" tabindex="0" aria-label="Original source with highlighted FAQ passages"></div>
+            </section>
             <div class="input-meta"><span id="char-count">0 / 50,000 characters</span><span>UTF-8 text</span></div>
             <div class="actions">
               <button type="button" id="generate-btn" class="button button-primary">Extract FAQ draft <span aria-hidden="true">↗</span></button>
@@ -98,8 +103,8 @@
             </div>
             <p id="download-name-help" class="field-help">Edit this name before downloading. The extension follows your chosen format.</p>
             <div class="result-actions">
-              <label class="visually-hidden" for="search-input">Search draft questions</label>
-              <input id="search-input" type="search" placeholder="Search draft answers..." disabled>
+              <label class="visually-hidden" for="search-input">Search questions and answers</label>
+              <input id="search-input" type="search" placeholder="Search questions and answers..." disabled>
               <label class="visually-hidden" for="export-format">Export format</label>
               <select id="export-format" class="export-select" disabled>
                 <option value="markdown">Markdown</option>
@@ -111,6 +116,13 @@
               <button type="button" id="copy-btn" class="button button-secondary" disabled>Copy</button>
               <button type="button" id="download-btn" class="button button-secondary" disabled>Download .md</button>
             </div>
+            <div class="review-filters">
+              <label for="review-filter" class="field-label">SHOW FAQs</label>
+              <select id="review-filter" disabled><option value="all">All statuses</option><option value="needs-review">Needs review</option><option value="approved">Approved</option></select>
+              <button type="button" id="clear-filters-btn" class="button button-quiet" disabled>Clear filters</button>
+            </div>
+            <p id="review-summary" class="field-help" role="status" aria-live="polite"></p>
+            <p class="field-help">Search and filters change this view. Exports always include all FAQs.</p>
             <div class="review-toolbar">
               <button type="button" id="undo-btn" class="button button-quiet" disabled>Undo removal / merge</button>
               <button type="button" id="add-item-btn" class="button button-quiet">+ Add FAQ</button>

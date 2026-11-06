@@ -53,6 +53,9 @@ let undoHistory = [];
 let saveTimer;
 let importRevision = 0;
 let reviewUpdaters = [];
+let filterUpdaters = [];
+let activeSourceId = null;
+let sourceViewKey = null;
 let activeDraftRequest = 0;
 let activeExportRequest = 0;
 let exporting = false;
@@ -60,7 +63,7 @@ let exporting = false;
 function projectTitle() { return $("project-title").value.trim() || "FAQ draft"; }
 
 function currentProject() {
-  return {type: "doc2faq-project", schemaVersion: 1, title: projectTitle(), mode: selectedMode(),
+  return {type: "doc2faq-project", schemaVersion: 2, title: projectTitle(), mode: selectedMode(),
     downloadName: $("download-name").value, source: {text: source.value, name: sourceName}, items};
 }
 
@@ -98,7 +101,7 @@ function applyProject(project) {
   modeSelect.value = project.mode;
   items = project.items;
   undoHistory = [];
-  search.value = "";
+  resetReviewView();
   updateModeText(); updateCount(); render(); autosave();
 }
 
@@ -150,6 +153,8 @@ function updateControls() {
   const hasItems = items.length > 0;
   const ready = validDraft();
   search.disabled = !hasItems;
+  $("review-filter").disabled = !hasItems;
+  $("clear-filters-btn").disabled = !search.value && !["needs-review", "approved"].includes($("review-filter").value);
   copyButton.disabled = !ready || ["pdf", "docx"].includes(formatSelect.value);
   downloadButton.disabled = !ready || exporting;
   formatSelect.disabled = !hasItems;
@@ -184,35 +189,95 @@ function move(item, offset) {
   render(); autosave();
 }
 
-function render() {
-  reviewUpdaters = [];
-  const term = search.value.trim().toLocaleLowerCase();
-  const shown = items.filter((item) =>
-    (item.question + " " + item.answer).toLocaleLowerCase().includes(term));
-  results.replaceChildren();
-  updateControls();
+function resetReviewView() {
+  search.value = "";
+  $("review-filter").value = "all";
+  activeSourceId = null;
+}
 
-  if (!shown.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty-state";
-    const icon = document.createElement("div");
-    icon.className = "empty-icon";
-    icon.textContent = "?";
-    const title = document.createElement("h4");
-    title.textContent = items.length ? "No matching answers." : "Your answers will appear here.";
-    const hint = document.createElement("p");
-    hint.textContent = items.length
-      ? "Try a different search term."
-      : "Load the example or add text on the left, then create your first draft.";
-    empty.append(icon, title, hint);
-    results.append(empty);
+function matchesReview(item) {
+  const term = search.value.trim().toLocaleLowerCase();
+  const filter = $("review-filter").value;
+  return (item.question + " " + item.answer).toLocaleLowerCase().includes(term) &&
+    (!["approved", "needs-review"].includes(filter) || item.reviewStatus === filter);
+}
+
+function updateReviewSummary() {
+  const approved = items.filter((item) => item.reviewStatus === "approved").length;
+  const shown = items.filter(matchesReview).length;
+  $("review-summary").textContent = shown + " of " + items.length + " FAQs shown · " +
+    approved + " approved · " + (items.length - approved) + " need review";
+  $("no-matches").hidden = shown > 0;
+  for (const update of filterUpdaters) update();
+  updateControls();
+  renderSourceViewer();
+}
+
+function renderSourceViewer(revealSelection = false) {
+  const item = items.find((entry) => entry.id === activeSourceId && matchesReview(entry));
+  const viewer = $("source-viewer");
+  const content = $("source-viewer-content");
+  viewer.hidden = !item;
+  if (!item) {
+    content.replaceChildren();
+    sourceViewKey = null;
     return;
   }
+  $("source-viewer-title").textContent = "Source for FAQ " + (items.indexOf(item) + 1);
+  const key = JSON.stringify([item.id, source.value, item.sources]);
+  if (key === sourceViewKey) {
+    if (revealSelection) content.querySelector(".source-line-selected")?.scrollIntoView?.({block: "nearest"});
+    return;
+  }
+  sourceViewKey = key;
+  content.replaceChildren();
+  $("source-viewer-note").textContent = item.sources.length
+    ? "Highlighted passages are the original source. Compare them with your edited answer. References use extracted-text lines, not PDF pages."
+    : "This FAQ was added manually and has no automatic source reference.";
+  const sourceLines = source.value.split(/\r\n|[\n\r\v\f\u0085\u2028\u2029]/);
+  const selected = new Set();
+  for (const ref of item.sources) {
+    if (Number.isInteger(ref.startLine) && Number.isInteger(ref.endLine) && ref.startLine >= 1 &&
+        ref.endLine >= ref.startLine && ref.endLine <= sourceLines.length &&
+        sourceLines.slice(ref.startLine - 1, ref.endLine).join("\n") === ref.excerpt) {
+      for (let line = ref.startLine; line <= ref.endLine; line++) selected.add(line);
+    }
+  }
+  if (item.sources.length && !selected.size) {
+    $("source-viewer-note").textContent = "The saved references do not match this document. Check the source manually.";
+  }
+  for (const [index, text] of sourceLines.entries()) {
+    const row = document.createElement("div");
+    row.className = selected.has(index + 1) ? "source-line source-line-selected" : "source-line";
+    const label = document.createElement("span");
+    label.className = "source-line-number";
+    label.textContent = String(index + 1);
+    const passage = document.createElement(selected.has(index + 1) ? "mark" : "span");
+    passage.textContent = text || " ";
+    row.append(label, passage); content.append(row);
+  }
+  if (revealSelection) content.querySelector(".source-line-selected")?.scrollIntoView?.({block: "nearest"});
+}
 
-  for (const item of shown) {
+function render() {
+  reviewUpdaters = [];
+  filterUpdaters = [];
+  results.replaceChildren();
+  const empty = document.createElement("div");
+  empty.id = "no-matches";
+  empty.className = "empty-state";
+  const title = document.createElement("h4");
+  title.textContent = items.length ? "No matching answers." : "Your answers will appear here.";
+  const hint = document.createElement("p");
+  hint.textContent = items.length ? "Try another search or clear the review filters." :
+    "Load the example or add text on the left, then create your first draft.";
+  empty.append(title, hint); results.append(empty);
+
+  for (const item of items) {
     const index = items.indexOf(item);
     const card = document.createElement("section");
     card.className = "faq-editor";
+    filterUpdaters.push(() => { card.hidden = !matchesReview(item); });
 
     const heading = document.createElement("div");
     heading.className = "faq-editor-heading";
@@ -248,6 +313,8 @@ function render() {
       draftRevision++;
       undoHistory = [];
       item.question = question.value;
+      item.reviewStatus = "needs-review";
+      updateReviewStatus(); updateReviewSummary();
       updateControls(); updateBadge();
       for (const update of reviewUpdaters) update();
       autosave();
@@ -267,10 +334,39 @@ function render() {
       draftRevision++;
       undoHistory = [];
       item.answer = answer.value;
+      item.reviewStatus = "needs-review";
+      updateReviewStatus(); updateReviewSummary();
       updateControls(); updateBadge(); autosave();
     });
 
     const reviewDetails = document.createElement("div");
+    const reviewLabel = document.createElement("label");
+    reviewLabel.className = "field-label";
+    reviewLabel.htmlFor = "faq-review-" + index;
+    reviewLabel.textContent = "REVIEW STATUS";
+    const reviewSelect = document.createElement("select");
+    reviewSelect.id = reviewLabel.htmlFor;
+    reviewSelect.className = "review-status-select";
+    for (const [value, text] of [["needs-review", "Needs review"], ["approved", "Approved"]]) {
+      const option = document.createElement("option");
+      option.value = value; option.textContent = text; reviewSelect.append(option);
+    }
+    function updateReviewStatus() { reviewSelect.value = item.reviewStatus; }
+    updateReviewStatus();
+    reviewSelect.addEventListener("change", () => {
+      if (reviewSelect.value === "approved" && (!item.question.trim() || !item.answer.trim())) {
+        updateReviewStatus();
+        setStatus("Complete the question and answer before approving this FAQ.", "error"); return;
+      }
+      draftRevision++; undoHistory = [];
+      item.reviewStatus = reviewSelect.value === "approved" ? "approved" : "needs-review";
+      updateReviewSummary(); autosave();
+    });
+    const viewButton = makeButton("View source beside answer", "editor-action", () => {
+      activeSourceId = item.id; renderSourceViewer(true);
+      $("source-viewer").scrollIntoView?.({block: "nearest"});
+    });
+    reviewDetails.append(reviewLabel, reviewSelect, viewButton);
     const badge = document.createElement("p");
     badge.className = "source-badge";
     function updateBadge() {
@@ -332,6 +428,7 @@ function render() {
     card.append(heading, questionLabel, question, answerLabel, answer, reviewDetails);
     results.append(card);
   }
+  updateReviewSummary();
 }
 
 function markdown() {
@@ -394,7 +491,7 @@ function clearDraft() {
   updateModeText();
   items = [];
   undoHistory = [];
-  search.value = "";
+  resetReviewView();
   render();
 }
 
@@ -405,7 +502,12 @@ source.addEventListener("input", () => {
   clearDraft(); autosave();
   setStatus("Source updated. Create a new FAQ draft.");
 });
-search.addEventListener("input", render);
+search.addEventListener("input", updateReviewSummary);
+$("review-filter").addEventListener("change", updateReviewSummary);
+$("clear-filters-btn").addEventListener("click", () => {
+  search.value = ""; $("review-filter").value = "all"; updateReviewSummary();
+});
+$("close-source-btn").addEventListener("click", () => { activeSourceId = null; renderSourceViewer(); });
 modeSelect.addEventListener("change", () => {
   updateModeText();
   clearDraft(); autosave();
@@ -428,7 +530,7 @@ $("sample-btn").addEventListener("click", () => {
 
 addButton.addEventListener("click", () => {
   if (items.length >= MAX_ITEMS) return;
-  search.value = "";
+  resetReviewView();
   draftRevision++;
   undoHistory = [];
   items.push(projectTools.normalizeItem({question: "", answer: ""}));
@@ -540,7 +642,7 @@ draftButton.addEventListener("click", async () => {
         .slice(0, MAX_ITEMS).map(projectTools.normalizeItem)
       : [];
     undoHistory = [];
-    search.value = "";
+    resetReviewView();
     render(); autosave();
     setStatus(items.length
       ? "Created " + items.length + " FAQ item(s). Edit and verify before exporting."

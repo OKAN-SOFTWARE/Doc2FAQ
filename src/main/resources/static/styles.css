@@ -85,3 +85,20 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .download-name-field{display:flex;align-items:center;border:1px solid #385066;background:#0c1829;border-radius:8px;overflow:hidden}.download-name-field input{min-width:0;flex:1;width:100%;border:0;padding:11px 12px;background:transparent;color:var(--text);font-size:13px}.download-name-field span{padding:10px 12px;color:var(--mint);font:12px ui-monospace,monospace;border-left:1px solid var(--line)}
 #download-name-help{margin-bottom:16px}#preview-content h1{text-align:center}
 @media(prefers-reduced-motion:reduce){body::before{background:radial-gradient(ellipse at 65% 15%,#4a9e9315,transparent 70%)}#ambient-background{opacity:.4}}
+
+/* Review workflow: preserve the existing workspace at narrow widths. */
+[hidden]{display:none!important}
+.review-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.review-filters .field-label{margin:0}
+.review-filters select,.review-status-select{background:#0c1829;color:var(--text);border:1px solid #385066;border-radius:8px;padding:10px;max-width:100%}
+.review-status-select{margin:4px 10px 12px 0}
+.source-viewer{margin-top:18px;border:1px solid #426b78;border-radius:10px;padding:14px;position:sticky;top:16px;background:#101f30}
+.source-viewer-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.source-viewer-heading h4{margin:0;font-size:15px}
+.source-viewer-content{max-height:440px;overflow:auto;font:12px/1.7 ui-monospace,monospace;background:#0c1829;border-radius:6px;padding:10px 0}
+.source-line{display:flex;gap:12px;padding:2px 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.source-line-number{flex:0 0 36px;color:#8da8ba;text-align:right;user-select:none}
+.source-line>span:last-child,.source-line>mark{min-width:0;flex:1}
+.source-line-selected{background:#245c4b55;border-left:3px solid var(--mint);padding-left:7px}
+.source-line mark{background:transparent;color:#bcffe0}
+@media(max-width:950px){.source-viewer{position:static}.source-viewer-content{max-height:280px}}

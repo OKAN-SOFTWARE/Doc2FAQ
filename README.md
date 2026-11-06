@@ -8,6 +8,15 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
 > **Current version: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
 
+## In development: v0.5.0 — Source & Review
+
+- **Source beside answer:** select **View source beside answer** on an FAQ to highlight all of its original passages in a read-only document viewer beside the review editor on desktop (stacked on smaller screens). References still use extracted-text lines, not PDF page numbers. Manual FAQs have no automatic reference.
+- **Review status:** FAQs start as **Needs review**. Mark a complete answer **Approved** after checking it. Editing its question or answer, or merging FAQs, returns it to **Needs review**. Moving an item preserves approval; Undo restores the status from before a removal or merge.
+- **Search and review filters:** combine a case-insensitive question/answer search with **All statuses**, **Needs review**, or **Approved**. The summary shows visible, approved, and pending counts. **Clear filters** restores the full list. Filters never change what is saved, previewed, or exported: all FAQs remain included, and incomplete entries still block export.
+- **Saved work compatibility:** approval status is preserved in project downloads and optional autosave. New saves use project schema 2; v0.4 schema-1 files still open with FAQs marked Needs review. Schema-2 files require v0.5 or later to reopen.
+
+Development builds use `0.5.0-SNAPSHOT` in `pom.xml` (`target/doc2faq-0.5.0-SNAPSHOT.jar`). The latest published download remains v0.4.0 until a new release is validated and published.
+
 ## New in v0.4.0
 
 - **Save work / Open saved work:** a versioned JSON file preserves source text, title, mode, draft order, edits, original excerpts, and duplicate-review choices. Incomplete FAQs can be saved too. Project files are limited to 4 MB and validated before replacing the workspace.
@@ -167,7 +176,7 @@ After updating your checkout to the latest `main`, run these commands from the d
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.4.0.jar
+java -jar target/doc2faq-0.5.0-SNAPSHOT.jar
 ```
 
 The JavaScript checks require Node.js. Keep the terminal open while the app runs, and use **Ctrl+C** to stop it. Open **http://localhost:8080** and refresh the browser to load the updated frontend.
@@ -175,7 +184,7 @@ The JavaScript checks require Node.js. Keep the terminal open while the app runs
 If port 8080 is occupied, stop the previous Doc2FAQ process or use an alternate port:
 
 ```cmd
-java -jar target/doc2faq-0.4.0.jar --server.port=8081
+java -jar target/doc2faq-0.5.0-SNAPSHOT.jar --server.port=8081
 ```
 
 Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.
