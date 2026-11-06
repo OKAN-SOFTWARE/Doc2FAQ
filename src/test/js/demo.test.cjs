@@ -33,7 +33,7 @@ test('browser demo validates size and caps entries', () => {
 test('browser adapter never falls through to remote import or export APIs', async () => {
   const unsupported = await request('/api/faqs/export/pdf', {});
   assert.equal(unsupported.ok, false);
-  assert.match((await unsupported.json()).message, /Java app/);
+  assert.match((await unsupported.json()).message, /unavailable/);
   const supported = await request('/api/faqs/preview', {body:JSON.stringify({content:'Q: What?\nA: Example.'})});
   assert.equal(supported.ok, true);
   assert.equal((await supported.json()).count, 1);

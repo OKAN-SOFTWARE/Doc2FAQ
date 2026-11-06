@@ -54,7 +54,7 @@ The document placeholder now uses neutral Q&A prompts, and Generate Mode's sampl
 
 [Open the interactive browser demo](https://okantiktas.com/projects/doc2faq/) · [Source & Review user guide](docs/USER-GUIDE.md) · [Demo capabilities and deployment](docs/WEB-DEMO.md)
 
-The demo processes pasted text and TXT/Markdown in your browser, using simplified rules. Try both drafting modes, source highlighting, editing, approval status, duplicate review, search/filters, saved projects, and Markdown/JSON/HTML exports. PDF/Word imports and exports require the downloadable Java app; the demo does not run a public Java backend. The development demo may include features newer than the latest release download.
+The demo processes pasted text and TXT/Markdown in your browser, using simplified rules. Try both drafting modes, source highlighting, editing, approval status, duplicate review, search/filters, saved projects, and Markdown/JSON/HTML exports. PDF/Word (.docx) import and export also run locally in the browser; PDF uploads are limited to 5 MB and 50 pages, and DOCX to 5 MB. Scanned PDFs need external OCR. The demo does not run a Java backend and its drafting rules remain simplified. Document libraries load from a version-pinned CDN when needed; document content is not uploaded. Browser PDF export uses standard Latin fonts and suggests Word when a character cannot be represented. The development demo may include features newer than the latest release download.
 
 For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklist, see [docs/RELEASING.md](docs/RELEASING.md).
 
@@ -322,7 +322,9 @@ GitHub Actions automatically runs the Java and JavaScript checks on pushes and p
 | No FAQs visible after filtering | Use **Clear filters**; the draft and its export still include every FAQ |
 | Approval changes after editing | Expected: edited or merged content returns to Needs review |
 | Saved project will not open in v0.4 | Schema-2 projects need v0.5 or later; keep the original schema-1 file when using older releases |
-| PDF/Word unavailable on the website demo | Use the local Java app; the browser demo supports text formats only |
+| Browser document tools fail to load | Allow the version-pinned jsDelivr libraries and retry; document content remains on your device |
+| Older Word `.doc` file rejected | Save it as `.docx` first |
+| Browser PDF export reports an unsupported character | Choose Word (.docx), which preserves Unicode text |
 | Scanned PDF fails | The file is image-only; run OCR outside Doc2FAQ first |
 | Port 8080 already in use | Stop the other program or start Doc2FAQ with port 9090 |
 | Maven downloads fail | Check internet access, proxy configuration, corporate restrictions, and the Maven Central repository |

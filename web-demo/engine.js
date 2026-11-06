@@ -58,7 +58,8 @@
   }
   const api = {draft, async request(url, options) {
     if (!['/api/faqs/preview', '/api/faqs/generate'].includes(url)) {
-      return {ok: false, json: async () => ({message: 'PDF and Word processing are available in the downloadable Java app.'})};
+      if (root.Doc2FaqDocuments) return root.Doc2FaqDocuments.request(url, options);
+      return {ok: false, json: async () => ({message: 'Document tools are unavailable. Please reload the page.'})};
     }
     try {
       const data = draft(JSON.parse(options.body).content, url.endsWith('/generate') ? 'generate' : 'extract');
