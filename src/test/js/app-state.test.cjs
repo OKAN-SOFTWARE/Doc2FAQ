@@ -301,3 +301,30 @@ test("manual FAQs show an explicit no-reference notice in the source viewer", as
   assert.match(app.element("source-viewer-note").textContent, /no automatic source reference/);
   assert.equal(descendants(app.element("source-viewer-content")).filter(node => node.tag === "mark").length, 0);
 });
+
+test("editing FAQs preserves source viewer nodes and scroll; only explicit selection scrolls passages", async () => {
+  const app = harness(); await makeDraft(app);
+  const content = app.element("source-viewer-content");
+  let passageScrolls = 0;
+  content.querySelector = () => ({scrollIntoView() { passageScrolls++; }});
+  const open = descendants(app.element("results")).find(node => node.textContent === "View source beside answer");
+  open.handlers.click();
+  assert.equal(passageScrolls, 1);
+  const originalRows = [...content.children];
+  content.scrollTop = 125;
+  for (const className of ["faq-edit-answer", "faq-edit-question"]) {
+    const field = descendants(app.element("results")).find(node => node.className === className);
+    field.value = "Updated text"; field.handlers.input();
+    assert.equal(content.children[0], originalRows[0]);
+    assert.equal(content.scrollTop, 125);
+    assert.equal(passageScrolls, 1);
+  }
+  const select = descendants(app.element("results")).find(node => node.className === "review-status-select");
+  select.value = "approved"; select.handlers.change();
+  assert.equal(content.children[0], originalRows[0]);
+  assert.equal(passageScrolls, 1);
+  open.handlers.click();
+  assert.equal(passageScrolls, 2);
+  app.element("close-source-btn").handlers.click();
+  assert.equal(content.children.length, 0);
+});

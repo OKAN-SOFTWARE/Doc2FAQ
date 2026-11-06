@@ -55,6 +55,7 @@ let importRevision = 0;
 let reviewUpdaters = [];
 let filterUpdaters = [];
 let activeSourceId = null;
+let sourceViewKey = null;
 let activeDraftRequest = 0;
 let activeExportRequest = 0;
 let exporting = false;
@@ -212,14 +213,24 @@ function updateReviewSummary() {
   renderSourceViewer();
 }
 
-function renderSourceViewer() {
+function renderSourceViewer(revealSelection = false) {
   const item = items.find((entry) => entry.id === activeSourceId && matchesReview(entry));
   const viewer = $("source-viewer");
   const content = $("source-viewer-content");
-  content.replaceChildren();
   viewer.hidden = !item;
-  if (!item) return;
+  if (!item) {
+    content.replaceChildren();
+    sourceViewKey = null;
+    return;
+  }
   $("source-viewer-title").textContent = "Source for FAQ " + (items.indexOf(item) + 1);
+  const key = JSON.stringify([item.id, source.value, item.sources]);
+  if (key === sourceViewKey) {
+    if (revealSelection) content.querySelector(".source-line-selected")?.scrollIntoView?.({block: "nearest"});
+    return;
+  }
+  sourceViewKey = key;
+  content.replaceChildren();
   $("source-viewer-note").textContent = item.sources.length
     ? "Highlighted passages are the original source. Compare them with your edited answer. References use extracted-text lines, not PDF pages."
     : "This FAQ was added manually and has no automatic source reference.";
@@ -245,7 +256,7 @@ function renderSourceViewer() {
     passage.textContent = text || " ";
     row.append(label, passage); content.append(row);
   }
-  content.querySelector(".source-line-selected")?.scrollIntoView?.({block: "nearest"});
+  if (revealSelection) content.querySelector(".source-line-selected")?.scrollIntoView?.({block: "nearest"});
 }
 
 function render() {
@@ -352,7 +363,7 @@ function render() {
       updateReviewSummary(); autosave();
     });
     const viewButton = makeButton("View source beside answer", "editor-action", () => {
-      activeSourceId = item.id; renderSourceViewer();
+      activeSourceId = item.id; renderSourceViewer(true);
       $("source-viewer").scrollIntoView?.({block: "nearest"});
     });
     reviewDetails.append(reviewLabel, reviewSelect, viewButton);
