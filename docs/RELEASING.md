@@ -2,6 +2,19 @@
 
 The release version is **v0.4.0**. The release commit uses `0.4.0` in `pom.xml`; earlier development builds used `0.4.0-SNAPSHOT`. Merging source changes alone does not publish a GitHub Release or update an already downloaded JAR.
 
+## v0.5.0 development checks
+
+The next development version is `0.5.0-SNAPSHOT`; use `target/doc2faq-0.5.0-SNAPSHOT.jar` when testing a source build. The v0.4.0 publishing instructions below describe the existing release; update the release version and notes before publishing v0.5.0.
+
+Before preparing v0.5.0:
+
+1. Select an FAQ's source viewer and check every highlighted passage, including multiple references after merge. Try a manual FAQ and a document containing HTML-like text. Check desktop side-by-side and mobile stacked layouts.
+2. Approve a complete FAQ; edit its question or answer and confirm it needs review again. Confirm blank FAQs cannot be approved. Remove/Undo and reorder approved FAQs.
+3. Combine search and status filters, edit a matching FAQ, check counts, and clear filters. Add an FAQ while filtering and confirm it is visible.
+4. Save/reopen and autosave/reload approvals; import a schema-1 project and confirm Needs review defaults. Reject malformed review states without replacing the workspace.
+5. With filters active, preview and export all five formats. Confirm all FAQs remain included in draft order; a hidden blank entry must still prevent export.
+6. Run the Java and JavaScript checks below and smoke-test the packaged JAR.
+
 ## Validate the release build
 
 Use JDK 21, Maven 3.6.3+, and Node.js:
