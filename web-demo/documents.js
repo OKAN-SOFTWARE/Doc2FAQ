@@ -41,14 +41,25 @@
       let text = '';
       for (let i = 1; i <= doc.numPages; i++) {
         const page = await doc.getPage(i), content = await page.getTextContent();
-        let line = '', pageText = '', lastY = null;
+        let line = '', pageText = '', lastY = null, previous = null;
         for (const item of content.items) {
           if (typeof item.str !== 'string') continue;
           const y = item.transform?.[5];
-          if (line && lastY !== null && Number.isFinite(y) && Math.abs(y - lastY) > 3) { pageText += line.trim() + '\n'; line = ''; }
-          line += (line && !line.endsWith(' ') ? ' ' : '') + item.str;
+          if (line && lastY !== null && Number.isFinite(y) && Math.abs(y - lastY) > 3) { pageText += line.trim() + '\n'; line = ''; previous = null; }
+          let separator = '';
+          if (line && !/\s$/.test(line) && !/^\s/.test(item.str) && previous) {
+            const x = item.transform?.[4], beforeX = previous.transform?.[4];
+            if (Number.isFinite(x) && Number.isFinite(beforeX) && Number.isFinite(previous.width) && Number.isFinite(item.width)) {
+              const gap = item.dir === 'rtl' && previous.dir === 'rtl'
+                ? beforeX - (x + item.width) : x - (beforeX + previous.width);
+              const size = Math.hypot(item.transform?.[2] || 0, item.transform?.[3] || 0) || 10;
+              if (gap > Math.max(0.5, size * 0.12)) separator = ' ';
+            }
+          }
+          line += separator + item.str;
+          previous = item;
           lastY = y;
-          if (item.hasEOL) { pageText += line.trim() + '\n'; line = ''; lastY = null; }
+          if (item.hasEOL) { pageText += line.trim() + '\n'; line = ''; lastY = null; previous = null; }
           if (text.length + pageText.length + line.length > MAX_TEXT) throw new Error('Extracted text exceeds 50,000 characters.');
         }
         text += pageText + line.trim() + (i < doc.numPages ? '\n\n' : '');
@@ -95,6 +106,10 @@
       stream.resume();
     });
   }
+  function headingPrefix(style) {
+    const level = /^Heading([1-6])$/i.exec(style);
+    return level ? '#'.repeat(Math.min(Number(level[1]) + 1, 6)) + ' ' : '';
+  }
   function wordXmlText(xml, Parser = root.DOMParser) {
     if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw new Error('Unsupported XML declarations in the Word document.');
     const document = new Parser().parseFromString(xml, 'application/xml');
@@ -112,8 +127,7 @@
       }
       if (!text.trim()) continue;
       const style = paragraph.getElementsByTagNameNS(ns, 'pStyle')[0];
-      const level = /^Heading([1-6])$/i.exec(style?.getAttributeNS(ns, 'val') || '');
-      if (level) text = '#'.repeat(Number(level[1])) + ' ' + text;
+      text = headingPrefix(style?.getAttributeNS(ns, 'val') || '') + text;
       length += text.length + 1;
       if (length > MAX_TEXT + 1) throw new Error('Extracted text exceeds 50,000 characters.');
       lines.push(text);
@@ -231,7 +245,7 @@
       throw new Error('Unsupported document operation.');
     } catch (error) { return {ok: false, json: async () => ({message: error.message || 'Could not process this document.'})}; }
   }
-  const api = {request, validateInput, checkedText, validateZip, boundedEntry, wordXmlText, extractDocx, extractPdf, validateExport, references, wrap, exportPdf, exportDocx, libraries};
+  const api = {request, validateInput, checkedText, validateZip, boundedEntry, headingPrefix, wordXmlText, extractDocx, extractPdf, validateExport, references, wrap, exportPdf, exportDocx, libraries};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Doc2FaqDocuments = api;
 })(globalThis);
