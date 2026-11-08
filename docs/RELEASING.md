@@ -1,6 +1,6 @@
 # Doc2FAQ release checklist
 
-**Release-candidate branch:** `0.5.0`. **Latest published download:** v0.4.0. The next planned release is **v0.5.0 — Source & Review**. The release-candidate branch is not a published release. Merging source changes does not publish a release or update an installed JAR. Keep existing tags and assets unchanged.
+**Latest published download:** v0.5.0 — Source & Review. This checklist records how I validated and packaged the v0.5.0 release. A source merge alone does not update existing JAR downloads or running Java processes; each release needs its own tested build and assets.
 
 ## Validate the release candidate
 

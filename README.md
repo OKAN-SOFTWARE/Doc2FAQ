@@ -6,18 +6,18 @@ Doc2FAQ is a Java 21 / Spring Boot document-to-FAQ workbench. Paste text or uplo
 
 Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
-> **Latest published download: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
+> **Latest release: v0.5.0 — Source & Review.** Download the ready-to-run JAR, Windows ZIP, and checksum file from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.5.0).
 
-## Current source: v0.5.0 release candidate — Source & Review
+## New in v0.5.0 — Source & Review
 
-I redesigned Doc2FAQ with an illustrated homepage and a responsive FAQ workbench. Visit the [product homepage](https://okantiktas.com/projects/doc2faq/) for an overview, or try the [interactive browser demo](https://okantiktas.com/projects/doc2faq/demo/) to import documents, review FAQs, and export the results directly in your browser. The browser demo and downloadable Java application have different processing engines, so their FAQ suggestions may differ. See the [v0.5.0 changes](CHANGELOG.md#050--unreleased-release-candidate) and [design system](docs/DESIGN-SYSTEM.md) for details.
+I redesigned Doc2FAQ with an illustrated homepage and a responsive FAQ workbench. Visit the [product homepage](https://okantiktas.com/projects/doc2faq/) for an overview, or try the [interactive browser demo](https://okantiktas.com/projects/doc2faq/demo/) to import documents, review FAQs, and export the results directly in your browser. The browser demo and downloadable Java application have different processing engines, so their FAQ suggestions may differ. See the [v0.5.0 changes](CHANGELOG.md#050--2026-11-08) and [design system](docs/DESIGN-SYSTEM.md) for details.
 
 - **Source beside answer:** select **View source beside answer** on an FAQ to highlight all of its original passages in a read-only document viewer beside the review editor on desktop (stacked on smaller screens). References still use extracted-text lines, not PDF page numbers. Manual FAQs have no automatic reference.
 - **Review status:** FAQs start as **Needs review**. Mark a complete answer **Approved** after checking it. Editing its question or answer, or merging FAQs, returns it to **Needs review**. Moving an item preserves approval; Undo restores the status from before a removal or merge.
 - **Search and review filters:** combine a case-insensitive question/answer search with **All statuses**, **Needs review**, or **Approved**. The summary shows visible, approved, and pending counts. **Clear filters** restores the full list. Filters never change what is saved, previewed, or exported: all FAQs remain included, and incomplete entries still block export.
 - **Saved work compatibility:** approval status is preserved in project downloads and optional autosave. New saves use project schema 2; v0.4 schema-1 files still open with FAQs marked Needs review. Schema-2 files require v0.5 or later to reopen.
 
-The release-candidate branch uses `0.5.0` in `pom.xml` (`target/doc2faq-0.5.0.jar`). The latest published download remains v0.4.0 until the release candidate passes validation and v0.5.0 is published. This branch is not itself a published release.
+The source builds version `0.5.0` from `pom.xml` as `target/doc2faq-0.5.0.jar`. The published ZIP contains the same JAR, a Windows launcher, and a quick-start guide; release downloads also include SHA-256 checksums.
 
 ## New in v0.4.0
 

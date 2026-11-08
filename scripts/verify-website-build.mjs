@@ -13,10 +13,11 @@ assert.match(home, /href="\.\/styles\.css"/, 'Homepage loads styles relative to 
 assert.match(home, /<details class="mobile-nav">/, 'Mobile visitors can open homepage navigation');
 assert.doesNotMatch(home, /href="\/(?:demo\/|styles\.css|)"/, 'No domain-root homepage links');
 assert.match(home, /id="whats-new"/, 'Homepage includes the release notes preview');
-assert.match(home, /v0\.5\.0 PREVIEW/, 'Unreleased version is visibly labeled');
-assert.match(home, /Release candidate — not published yet/, 'Unreleased status is explicit');
+assert.match(home, /v0\.5\.0 AVAILABLE/, 'Published version is visibly labeled');
+assert.match(home, /Released November 8, 2026/, 'Release date is explicit');
 assert.match(home, /Java 21–26/, 'Homepage reflects the required compatibility matrix');
-assert.match(home, /v0\.4\.0 is still the latest published download/, 'Latest published release is identified accurately');
+assert.match(home, /v0\.5\.0 Java app and Windows ZIP are ready to download/, 'Current release downloads are identified accurately');
+assert.match(home, /releases\/tag\/v0\.5\.0/, 'Homepage links directly to the published release');
 assert.match(demo, /href="\.\.\/"/, 'Demo navigates back to its own homepage');
 assert.match(demo, /THE INTERACTIVE PLAYGROUND/, 'Demo is branded consistently');
 assert.match(demo, /id="file-input"/, 'File import remains available');
