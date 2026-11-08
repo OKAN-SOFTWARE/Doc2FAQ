@@ -6,7 +6,7 @@ const assert = require("node:assert/strict");
 const tools = require("../../main/resources/static/project.js");
 const script = readFileSync(path.resolve(__dirname, "../../main/resources/static/app.js"), "utf8");
 
-function harness(saved = new Map(), blocked = false, fetcher = null) {
+function harness(saved = new Map(), blocked = false, fetcher = null, confirmer = () => true) {
   const elements = new Map();
   function node(tag = "") {
     return {tag, value: "", checked: false, disabled: false, children: [], handlers: {}, textContent: "",
@@ -26,7 +26,7 @@ function harness(saved = new Map(), blocked = false, fetcher = null) {
     removeItem(key) { if (blocked) throw new Error("Storage blocked"); saved.delete(key); }
   };
   const context = {Doc2FaqProject: tools, document: {getElementById: element, createElement: node},
-    FormData: class { append() {} }, localStorage: storage, setTimeout(fn) { fn(); return 1; }, clearTimeout() {}, confirm: () => true,
+    FormData: class { append() {} }, localStorage: storage, setTimeout(fn) { fn(); return 1; }, clearTimeout() {}, confirm: confirmer,
     fetch: fetcher || (async () => ({ok: true, json: async () => ({items: [{question: "Where is support?", answer: "Ask the team.",
       source: {section: "Support", startLine: 1, endLine: 2, excerpt: "Q: Where is support?\nA: Ask the team."}}]})}))};
   vm.runInNewContext(script, context);
@@ -72,6 +72,18 @@ test("disabling autosave removes stored text and the preference", async () => {
   app.element("autosave-toggle").checked = true; app.element("autosave-toggle").handlers.change();
   app.element("autosave-toggle").checked = false; app.element("autosave-toggle").handlers.change();
   assert.equal(app.saved.size, 0);
+  assert.equal(app.element("faq-count").textContent, "1 ITEM");
+});
+
+test("canceling Clear saved data preserves the browser copy and current work", async () => {
+  const app = harness(new Map(), false, null, () => false);
+  await makeDraft(app);
+  app.element("autosave-toggle").checked = true;
+  app.element("autosave-toggle").handlers.change();
+  assert.equal(app.saved.has("doc2faq.project.v1"), true);
+  app.element("clear-saved-btn").handlers.click();
+  assert.equal(app.saved.has("doc2faq.project.v1"), true);
+  assert.equal(app.saved.get("doc2faq.autosave"), "true");
   assert.equal(app.element("faq-count").textContent, "1 ITEM");
 });
 

@@ -28,4 +28,11 @@ for (const name of ['styles.css', 'retro.css', 'app.js', 'engine.js', 'documents
   const file = path.join(output, 'demo', name);
   assert.ok((await stat(file)).size > 0, `Missing generated demo asset: ${name}`);
 }
+for (const name of ['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf', 'LICENSE-DejaVu.txt']) {
+  const fontAsset = path.join(output, 'demo/fonts', name);
+  assert.ok((await stat(fontAsset)).size > 0, `Missing Unicode PDF font asset: ${name}`);
+}
+const documents = await readFile(path.join(output, 'demo/documents.js'), 'utf8');
+assert.match(documents, /registerFontkit\(fonts\.fontkit\)/, 'PDF export registers the custom font engine');
+assert.match(documents, /DejaVuSans\.ttf/, 'PDF export uses bundled Unicode fonts');
 console.log('Website homepage, demo routes, export defaults and assets verified.');

@@ -44,7 +44,7 @@ Similar-question warnings use word overlap. Keep both retains distinct passages;
 
 The source build reads schemas 1 and 2, and saves schema 2. Older v0.4 apps reject schema-2 files. Keep an original project copy if you also use an older release. The limit remains 4 MB.
 
-Optional browser autosave is off by default. Enabling it stores source and drafts on that browser origin. Clear saved data removes the stored copy while leaving the open workspace intact. Clear document removes source, drafts, pending results, and the saved copy. Download a project when browser storage is unavailable.
+Optional browser autosave is off by default. Enabling it stores source and drafts on that browser origin. The prominently highlighted **Clear saved data** button asks for confirmation; cancel keeps the browser copy, while confirmation removes it and leaves the open workspace intact. Clear document removes source, drafts, pending results, and the saved copy. Download a project when browser storage is unavailable.
 
 ## Export
 

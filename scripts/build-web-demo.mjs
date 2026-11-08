@@ -1,4 +1,4 @@
-import {readFile, writeFile, mkdir, copyFile} from 'node:fs/promises';
+import {readFile, writeFile, mkdir, copyFile, cp} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
@@ -26,7 +26,7 @@ html = html.replaceAll('@project.version@', version)
   .replace('Content preview. PDF and Word downloads apply their own page layout.', 'All FAQs are included, even when filtered. PDF and Word downloads apply their own pagination.');
 const noteStart = html.indexOf('        <p><strong>Good to know.</strong>');
 const noteEnd = html.indexOf('</p>', noteStart) + 4;
-html = html.slice(0, noteStart) + '        <p><strong>Browser demo.</strong> Text processing and text exports happen on your device. Nothing you paste is sent to an FAQ server. No AI is used. This simplified demo may produce different drafts from the full Java app. Source references use text lines, not PDF pages. Optional autosave stores source and drafts in this browser; use Clear saved data on shared devices. Saved projects contain the source. PDF and Word (.docx) import/export run in your browser. Scanned PDFs need OCR, which is not included. PDF export uses standard Latin fonts; choose Word for unsupported characters. Document libraries load from a CDN when needed; your document content is not uploaded.</p>' + html.slice(noteEnd);
+html = html.slice(0, noteStart) + '        <p><strong>Browser demo.</strong> Text processing and text exports happen on your device. Nothing you paste is sent to an FAQ server. No AI is used. This simplified demo may produce different drafts from the full Java app. Source references use text lines, not PDF pages. Optional autosave stores source and drafts in this browser; use Clear saved data on shared devices. Saved projects contain the source. PDF and Word (.docx) import/export run in your browser. Scanned PDFs need OCR, which is not included. PDF export embeds bundled DejaVu Sans fonts for extended Unicode coverage; unsupported scripts may still require Word. Document libraries load from a CDN when needed; your document content is not uploaded.</p>' + html.slice(noteEnd);
 html = html.replace('      <section class="workspace"', `      <nav class="demo-links" aria-label="Project navigation"><a class="button button-secondary" href="https://okantiktas.com/projects/doc2faq/">← Back to Doc2FAQ homepage</a><a class="button button-secondary" href="https://github.com/OKAN-SOFTWARE/Doc2FAQ" target="_blank" rel="noopener noreferrer">Explore source ↗</a><a class="button button-primary" href="https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/latest" target="_blank" rel="noopener noreferrer">Download Java app ↗</a></nav>\n      <p class="demo-disclosure">Try the review workflow here. The latest downloadable release may have fewer features than this development demo. <a href="https://github.com/OKAN-SOFTWARE/Doc2FAQ/blob/main/docs/WEB-DEMO.md">Compare demo and app ↗</a></p>\n      <section class="workspace"`);
 await writeFile(path.join(output, 'index.html'), html);
 let app = await readFile(path.join(source, 'app.js'), 'utf8');
@@ -38,6 +38,7 @@ await writeFile(path.join(output, 'app.js'), app);
 for (const file of ['project.js', 'background.js', 'styles.css', 'retro.css']) await copyFile(path.join(source, file), path.join(output, file));
 await copyFile(path.join(root, 'web-demo/engine.js'), path.join(output, 'engine.js'));
 await copyFile(path.join(root, 'web-demo/documents.js'), path.join(output, 'documents.js'));
+await cp(path.join(root, 'web-demo/fonts'), path.join(output, 'fonts'), {recursive: true});
 await writeFile(path.join(output, 'styles.css'), (await readFile(path.join(output, 'styles.css'), 'utf8')) + '\n.demo-links{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 18px}.demo-links .button-primary{flex:0 1 auto}.demo-disclosure{color:var(--muted);font-size:13px;line-height:1.7;margin-bottom:30px}.demo-disclosure a{color:var(--mint)}\n');
 for (const file of ['app.js', 'engine.js', 'documents.js', 'project.js', 'background.js', 'styles.css', 'retro.css']) {
   const digest = createHash('sha256').update(await readFile(path.join(output, file))).digest('hex').slice(0, 12);
