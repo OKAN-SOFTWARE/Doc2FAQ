@@ -6,6 +6,9 @@
     pdf: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.mjs',
     worker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.worker.min.mjs',
     pdfLib: 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+    fontkit: 'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
+    pdfRegular: './fonts/DejaVuSans.ttf',
+    pdfBold: './fonts/DejaVuSans-Bold.ttf',
     zip: 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
     docx: 'https://cdn.jsdelivr.net/npm/docx@9.6.1/dist/index.iife.js'
   };
@@ -19,6 +22,16 @@
       script.onload = () => { clearTimeout(timer); if (root[name]) resolve(root[name]); else { pending.delete(url); reject(new Error('Document tools failed to initialize. Please reload.')); } };
       script.onerror = () => { clearTimeout(timer); script.remove(); pending.delete(url); reject(new Error('Document tools could not load. Check your connection and try again.')); };
       document.head.append(script);
+    }));
+    return pending.get(url);
+  }
+  function loadFont(url) {
+    if (!pending.has(url)) pending.set(url, root.fetch(url).then(async response => {
+      if (!response.ok) throw new Error('PDF fonts could not load. Check your connection and try again.');
+      return new Uint8Array(await response.arrayBuffer());
+    }).catch(error => {
+      pending.delete(url);
+      throw new Error('PDF fonts could not load. Check your connection and try again.', {cause: error});
     }));
     return pending.get(url);
   }
@@ -159,10 +172,12 @@
   }
   function wrap(text, font, size, width) {
     const result = [];
+    const advances = new Map();
     for (const paragraph of text.replace(/\r\n?/g, '\n').split('\n')) {
       let line = '', used = 0, lastSpace = -1;
       for (const char of paragraph) {
-        const advance = font.widthOfTextAtSize(char, size);
+        if (!advances.has(char)) advances.set(char, font.widthOfTextAtSize(char, size));
+        const advance = advances.get(char);
         if (used + advance > width && line) {
           if (lastSpace >= 0) { result.push(line.slice(0, lastSpace)); line = line.slice(lastSpace + 1); }
           else { result.push(line); line = ''; }
@@ -174,11 +189,33 @@
     }
     return result;
   }
-  async function exportPdf(data, lib) {
+  function checkPdfGlyphs(data, fonts) {
+    const regular = fonts.fontkit.create(fonts.regular);
+    const bold = fonts.fontkit.create(fonts.bold);
+    const examined = [
+      [data.title || 'FAQ draft', bold],
+      ...data.items.flatMap(item => [[item.question, bold], [item.answer, regular], ...(data.includeSources ? [[references(item), regular]] : [])])
+    ];
+    for (const [text, face] of examined) {
+      for (const char of new Set(text)) {
+        const point = char.codePointAt(0);
+        if (point <= 32 || point === 127) continue;
+        if (!face.hasGlyphForCodePoint(point)) {
+          throw new Error(`PDF export cannot display “${char}” (U+${point.toString(16).toUpperCase()}) with the bundled font. Choose Word (.docx) to preserve it.`);
+        }
+      }
+    }
+  }
+  async function exportPdf(data, lib, fonts) {
     validateExport(data);
+    checkPdfGlyphs(data, fonts);
     const pdf = await lib.PDFDocument.create();
     pdf.setTitle(data.title); pdf.setCreator('Doc2FAQ browser demo'); pdf.setAuthor('Doc2FAQ');
-    const regular = await pdf.embedFont(lib.StandardFonts.Helvetica), bold = await pdf.embedFont(lib.StandardFonts.HelveticaBold);
+    pdf.registerFontkit(fonts.fontkit);
+    // DejaVu Sans covers Turkish, Latin Extended, IPA, symbols and quotation marks
+    // that standard PDF Helvetica/WinAnsi cannot encode. Embed only used glyphs.
+    const regular = await pdf.embedFont(fonts.regular, {subset: true});
+    const bold = await pdf.embedFont(fonts.bold, {subset: true});
     const width = 595.28, height = 841.89, margin = 50, bottom = 58;
     let page, y;
     function newPage() { page = pdf.addPage([width, height]); y = height - margin; }
@@ -205,7 +242,7 @@
       }
       return new Blob([await pdf.save()], {type: 'application/pdf'});
     } catch (error) {
-      if (/WinAnsi|encode/i.test(error.message)) throw new Error('This PDF font cannot display a character in your text. Choose Word (.docx) to preserve it.');
+      if (/WinAnsi|encode|No glyph/i.test(error.message)) throw new Error('A character in your text is not supported by the PDF font. Choose Word (.docx) to preserve it.');
       throw error;
     }
   }
@@ -239,13 +276,19 @@
       }
       if (url === '/api/faqs/export/pdf' || url === '/api/faqs/export/docx') {
         const data = JSON.parse(options.body); validateExport(data);
-        const blob = url.endsWith('/pdf') ? await exportPdf(data, await loadScript(libraries.pdfLib, 'PDFLib')) : await exportDocx(data, await loadScript(libraries.docx, 'docx'));
+        const blob = url.endsWith('/pdf') ? await (async () => {
+          const [lib, fontkit, regular, bold] = await Promise.all([
+            loadScript(libraries.pdfLib, 'PDFLib'), loadScript(libraries.fontkit, 'fontkit'),
+            loadFont(libraries.pdfRegular), loadFont(libraries.pdfBold)
+          ]);
+          return exportPdf(data, lib, {fontkit, regular, bold});
+        })() : await exportDocx(data, await loadScript(libraries.docx, 'docx'));
         return {ok: true, blob: async () => blob};
       }
       throw new Error('Unsupported document operation.');
     } catch (error) { return {ok: false, json: async () => ({message: error.message || 'Could not process this document.'})}; }
   }
-  const api = {request, validateInput, checkedText, validateZip, boundedEntry, headingPrefix, wordXmlText, extractDocx, extractPdf, validateExport, references, wrap, exportPdf, exportDocx, libraries};
+  const api = {request, validateInput, checkedText, validateZip, boundedEntry, headingPrefix, wordXmlText, extractDocx, extractPdf, validateExport, references, wrap, checkPdfGlyphs, exportPdf, exportDocx, libraries};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Doc2FaqDocuments = api;
 })(globalThis);

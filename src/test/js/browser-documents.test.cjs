@@ -55,6 +55,38 @@ test('PDF line wrapping preserves blank lines and splits long tokens within the 
   assert.equal(lines.slice(0,3).join(''),'a'.repeat(51));
 });
 
+test('PDF export embeds custom Unicode fonts and retains Turkish and phonetic characters', async () => {
+  const drawn = [], embedded = [];
+  const font = {widthOfTextAtSize: text => [...text].length * 5};
+  const page = {drawText: text => drawn.push(text)};
+  const lib = {
+    rgb: () => ({}),
+    PDFDocument: {create: async () => ({
+      setTitle() {}, setCreator() {}, setAuthor() {},
+      registerFontkit(value) { assert.equal(typeof value.create, 'function'); },
+      async embedFont(bytes, options) { embedded.push({bytes, options}); return font; },
+      addPage() { return page; }, getPages() { return [page]; },
+      async save() { return new Uint8Array([37, 80, 68, 70]); }
+    })}
+  };
+  const fonts = {fontkit: {create: () => ({hasGlyphForCodePoint: () => true})}, regular: new Uint8Array([1]), bold: new Uint8Array([2])};
+  const pdf = await tools.exportPdf({title: 'İğdır', items: [{question: 'Türkçe?', answer: 'ışık, ş, ğ, ı, →, ŋ, ʒ'}]}, lib, fonts);
+  assert.equal(pdf.type, 'application/pdf');
+  assert.equal(embedded.length, 2);
+  assert.deepEqual(embedded.map(item => [...item.bytes]), [[1], [2]]);
+  assert.ok(embedded.every(item => item.options.subset === true));
+  assert.ok(drawn.join(' ').includes('İğdır'));
+  assert.ok(drawn.join(' ').includes('ışık, ş, ğ, ı, →, ŋ, ʒ'));
+  assert.match(tools.libraries.fontkit, /fontkit@1\.1\.1/);
+});
+
+test('PDF export reports an unsupported glyph instead of silently replacing it', () => {
+  const fonts = {fontkit: {create: () => ({hasGlyphForCodePoint: point => point !== 0x6c49})}, regular: new Uint8Array([1]), bold: new Uint8Array([2])};
+  const faq = {title: 'FAQ', items: [{question: 'What?', answer: 'The character 汉 must not disappear.'}]};
+  assert.throws(() => tools.checkPdfGlyphs(faq, fonts), /“汉” \(U\+6C49\).*Choose Word/);
+  assert.doesNotThrow(() => tools.checkPdfGlyphs({title: 'FAQ', items: [{question: 'Türkçe?', answer: 'İğdır → şı'}]}, fonts));
+});
+
 test('Word Heading 1 becomes a section the browser generator can draft from', () => {
   const {draft} = require('../../../web-demo/engine.js');
   const text = tools.headingPrefix('Heading1') + 'Services\nOnboarding guides.\n' + tools.headingPrefix('Heading2') + 'Support\nAsk the team.';

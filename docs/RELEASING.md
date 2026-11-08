@@ -4,12 +4,12 @@
 
 ## Validate the release candidate
 
-Use JDK 21+, Maven 3.6.3+, and Node.js. CI compiles the application for Java 21 and runs Java tests plus a packaged-JAR smoke check on JDKs 21 through 27. All matrix jobs must succeed before publication:
+Use JDK 21+, Maven 3.6.3+, and Node.js. CI compiles the application for Java 21 and runs Java tests plus a packaged-JAR smoke check on **JDKs 21 through 26**. All six required matrix jobs must succeed before publication. Java 27 is outside this **required** release matrix, but an exploratory [Java 27 CI rerun on November 8, 2026](https://github.com/OKAN-SOFTWARE/Doc2FAQ/actions/runs/42477058195) **passed the Maven build, tests, and packaged-JAR smoke check**. The earlier attempt failed only while downloading the JDK (HTTP 504). Consider formal Java 27 support separately in a later release:
 
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-node scripts/build-web-demo.mjs
+node scripts/build-website.mjs
 java -jar target/doc2faq-0.5.0.jar
 ```
 
@@ -34,6 +34,7 @@ GitHub Actions runs this smoke check on every push/PR. On Windows without Bash, 
 9. Import `TEst Data.pdf`, check the suggested `testdata-Doc2FAQ.pdf`, rename it, and verify the download. Check centered titles, PDF Lato fonts, page numbers, long answers/tokens, Unicode, and page breaks. Unsupported PDF glyphs must suggest Word. HTML must escape document markup.
 10. Change source/mode, clear the document, or open another project during pending imports/drafting/exports. Old results must not replace or download current work. Check keyboard focus, mobile widths, and reduced motion.
 11. Follow [WEB-DEMO.md](WEB-DEMO.md) for the separate static browser demo; verify its feature disclosure and website links. The demo cannot substitute for packaged-JAR testing.
+12. Review the [approved homepage design](DESIGN-SYSTEM.md), including responsive layouts, readable focus states, reduced-motion behavior, and the **What's new / v0.5.0 preview** release-notes area. Confirm that an unreleased candidate is not presented as a published download. Keep browser context menus and developer tools available; browser UI restrictions are not an application security control.
 
 ## Prepare v0.5.0
 
@@ -48,7 +49,7 @@ GitHub Actions runs this smoke check on every push/PR. On Windows without Bash, 
    git rev-parse HEAD
    mvn -B -ntp clean verify
    node --test src/test/js/*.test.cjs
-   node scripts/build-web-demo.mjs
+   node scripts/build-website.mjs
    java -jar target/doc2faq-0.5.0.jar
    ```
 

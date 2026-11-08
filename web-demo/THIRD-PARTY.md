@@ -5,7 +5,9 @@ The website lazily downloads these version-pinned scripts from jsDelivr. It send
 | Library | Version | Purpose | License |
 | --- | --- | --- | --- |
 | [Mozilla PDF.js](https://github.com/mozilla/pdf.js) | 5.6.205 | PDF text extraction and worker | Apache-2.0 |
-| [PDF-LIB](https://github.com/Hopding/pdf-lib) | 1.17.1 | Paginated PDF creation using standard Helvetica fonts | MIT |
+| [PDF-LIB](https://github.com/Hopding/pdf-lib) | 1.17.1 | Paginated PDF creation with embedded Unicode fonts | MIT |
+| [@pdf-lib/fontkit](https://github.com/Hopding/fontkit) | 1.1.1 | Embed custom PDF fonts (loaded lazily for PDF export) | MIT |
+| [DejaVu Sans](https://dejavu-fonts.github.io/) | Distribution-provided TTF | Bundled regular and bold Unicode PDF fonts; see `fonts/LICENSE-DejaVu.txt` | Bitstream Vera / DejaVu license |
 | [JSZip](https://github.com/Stuk/jszip) | 3.10.1 | Read DOCX archive entries through bounded decompression | MIT (also offered under GPLv3) |
 | [docx](https://github.com/dolanmiu/docx) | 9.6.1 | Generate editable Word documents | MIT |
 
