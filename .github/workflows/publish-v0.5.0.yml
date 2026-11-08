@@ -10,17 +10,42 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: doc2faq-v0.5.0-release
   cancel-in-progress: false
 
 jobs:
+  compatibility:
+    name: Release Java ${{ matrix.java }} compatibility
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        java: ['21', '22', '23', '24', '25', '26']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Build, test, and smoke-test the packaged application
+        run: |
+          mvn -B -ntp clean verify
+          bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar
+
   publish:
     if: github.repository == 'OKAN-SOFTWARE/Doc2FAQ' && github.ref == 'refs/heads/main'
+    # GitHub waits for every Java matrix entry; any failure skips publication.
+    needs: [compatibility]
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
