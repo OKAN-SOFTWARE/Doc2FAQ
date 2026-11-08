@@ -333,9 +333,13 @@ GitHub Actions automatically runs the Java and JavaScript checks on pushes and p
 
 ## Security and privacy
 
-Doc2FAQ currently has **no accounts, billing, rate limiting, or server-side draft storage**. PDF/DOCX files are processed for the request and are not intentionally saved by the app, though the web server may use temporary multipart buffering. TXT/Markdown are read in the browser and submitted as text when you generate a draft. Editing, project saves, and text-format exports happen in the browser. PDF/DOCX export sends the edited FAQ content and reference labels to this server for an in-memory download. With autosave off, unsaved drafts disappear on reload. Downloaded project files and optional browser autosave contain source text; clear saved data on shared devices when finished.
+I built Doc2FAQ with local document processing in mind. The downloadable Java application runs on your own computer at `http://localhost:8080`. PDF and Word files are processed by the local Spring Boot server for each request; I do not store them in an application database, although the server may temporarily buffer uploads. When you generate FAQs from pasted text or TXT/Markdown files, that text goes from your browser to the same local server. PDF and Word exports also send the edited FAQ content to the local server to create the download. Editing, project saves, and text-format exports happen in your browser.
 
-This is a **local development application**, not a hardened internet-facing service. Before offering paid or public document processing, add authentication, rate limiting, isolated document parsing, malware scanning, HTTPS, audit/monitoring, and retention policies. Do not process confidential material on an untrusted server.
+The [online demo](https://okantiktas.com/projects/doc2faq/demo/) works differently: document processing and exports run in your browser, without uploading your document to my website. PDF and Word features load version-pinned libraries from jsDelivr when needed, so your browser contacts that CDN for application code, not to submit document content.
+
+I leave **autosave off by default**. If you enable it, your browser stores the source text and FAQ draft locally so you can return to your work. **Save work** downloads a project file that also contains your source text. On a shared computer, use **Clear saved data** when finished and handle downloaded project files as you would the original documents. With autosave disabled, unsaved work does not survive a page reload.
+
+Doc2FAQ does not currently include user accounts, billing, request rate limiting, or a server-side draft database. **I designed the Java application for trusted local use, not as a public document-processing server.** Before hosting it for other users, I would add authentication, HTTPS, rate limits, isolated file parsing, malware scanning, monitoring, and a documented data-retention policy. I recommend processing confidential documents only on a device or server you trust, and reviewing the generated answers before sharing them.
 
 ## License
 
