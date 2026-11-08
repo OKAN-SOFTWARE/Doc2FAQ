@@ -99,7 +99,7 @@
             <label for="download-name" class="field-label">DOWNLOAD FILENAME</label>
             <div class="download-name-field">
               <input id="download-name" type="text" maxlength="180" value="document-Doc2FAQ" aria-describedby="download-name-help">
-              <span id="download-extension" aria-hidden="true">.md</span>
+              <span id="download-extension" aria-hidden="true">.pdf</span>
             </div>
             <p id="download-name-help" class="field-help">Edit this name before downloading. The extension follows your chosen format.</p>
             <div class="result-actions">
@@ -107,14 +107,14 @@
               <input id="search-input" type="search" placeholder="Search questions and answers..." disabled>
               <label class="visually-hidden" for="export-format">Export format</label>
               <select id="export-format" class="export-select" disabled>
+                <option value="pdf" selected>PDF</option>
+                <option value="docx">Word (.docx)</option>
                 <option value="markdown">Markdown</option>
                 <option value="json">JSON</option>
                 <option value="html">HTML</option>
-                <option value="pdf">PDF</option>
-                <option value="docx">Word (.docx)</option>
               </select>
               <button type="button" id="copy-btn" class="button button-secondary" disabled>Copy</button>
-              <button type="button" id="download-btn" class="button button-secondary" disabled>Download .md</button>
+              <button type="button" id="download-btn" class="button button-secondary" disabled>Download .pdf</button>
             </div>
             <div class="review-filters">
               <label for="review-filter" class="field-label">SHOW FAQs</label>
