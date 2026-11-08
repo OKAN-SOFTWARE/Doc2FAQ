@@ -62,7 +62,7 @@ For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklis
 
 ## Requirements
 
-- To run a release download: **Java 21 or newer**. The JAR targets Java 21 bytecode; v0.5.0's **required automated compatibility matrix is Java 21–26**. Java 27 is **not yet part of the verified support matrix**; this does not mean the application is known to be incompatible, only that its validation is deferred to a later release. Newer Java versions are not automatically guaranteed compatible. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
+- To run a release download: **Java 21 or newer**. The JAR targets Java 21 bytecode; v0.5.0's **required automated compatibility matrix is Java 21–26**. Java 27 **passed an exploratory CI build and packaged-JAR smoke test** on November 8, 2026, but is not a committed v0.5.0 support target; formal support can follow in a later release. Newer Java versions are not automatically guaranteed compatible. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
 
 To build from source:
 

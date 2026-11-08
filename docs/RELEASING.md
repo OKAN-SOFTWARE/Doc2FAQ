@@ -4,7 +4,7 @@
 
 ## Validate the release candidate
 
-Use JDK 21+, Maven 3.6.3+, and Node.js. CI compiles the application for Java 21 and runs Java tests plus a packaged-JAR smoke check on **JDKs 21 through 26**. All six required matrix jobs must succeed before publication. Java 27 is currently outside the verified release matrix; a previous Java 27 CI job failed while retrieving the Temurin JDK with **HTTP 504 before Maven or application tests started**. That failure does not establish an application incompatibility. Revisit Java 27 validation in a future release:
+Use JDK 21+, Maven 3.6.3+, and Node.js. CI compiles the application for Java 21 and runs Java tests plus a packaged-JAR smoke check on **JDKs 21 through 26**. All six required matrix jobs must succeed before publication. Java 27 is outside this **required** release matrix, but an exploratory [Java 27 CI rerun on November 8, 2026](https://github.com/OKAN-SOFTWARE/Doc2FAQ/actions/runs/42477058195) **passed the Maven build, tests, and packaged-JAR smoke check**. The earlier attempt failed only while downloading the JDK (HTTP 504). Consider formal Java 27 support separately in a later release:
 
 ```cmd
 mvn -B -ntp clean verify

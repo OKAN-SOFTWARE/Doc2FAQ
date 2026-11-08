@@ -19,7 +19,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Filters affect only the review list; saving, export preview, and all export formats retain every FAQ in draft order.
 - Export formats now open with PDF first and Word (.docx) second; the default download name uses `.pdf`.
 - GitHub Actions now uses Node 24-based checkout/setup-java actions and pins Ubuntu 24.04 to avoid runner-label migration notices.
-- The v0.5.0 release gate validates **Java 21–26** with Java 21-compatible bytecode. Java 27 is deferred, not declared incompatible: an earlier CI run failed with HTTP 504 during JDK download, before Doc2FAQ tests ran.
+- The v0.5.0 release gate validates **Java 21–26** with Java 21-compatible bytecode. Java 27 formal support is deferred, not declared incompatible: a transient JDK-download HTTP 504 caused an initial CI failure, and a later rerun **passed Java 27 build/tests and packaged-JAR smoke checks**.
 - Release-candidate source version is 0.5.0; v0.4.0 remains the published release until the new artifacts are validated and released.
 
 ## 0.4.0 — 2026-10-29
