@@ -13,6 +13,11 @@ was approved by project owner Okan Tiktas for future versions of Doc2FAQ.
 5. Direct workflow: import → generate/extract → review → export.
 6. Real functionality first: responsive controls, visible keyboard focus,
    sufficient text contrast, and reduced-motion support.
+7. A visible **What's new** area may preview unreleased changes, but must
+   distinguish the release candidate from the latest published download.
+8. Preserve the native right-click menu, text selection, keyboard shortcuts,
+   and browser developer tools. Hiding them does not protect application code
+   or document data; security checks belong on the server, where applicable.
 
 ## Palette
 

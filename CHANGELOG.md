@@ -7,7 +7,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 ### Added
 - Browser PDF/Word (.docx) import and paginated export with local processing, PDF page/file/text limits, bounded DOCX XML decompression, optional references, and clear unsupported-file/font errors.
 - Browser-only website demo built from the shared frontend, with simplified text drafting, explicit PDF/Word limitations, homepage navigation, and text exports.
-- Approved Doc2FAQ landing page and matching browser/Java workbench theme, with original document mascot, responsive cards, reduced-motion support, and a reproducible `website-dist/` build.
+- Approved Doc2FAQ landing page and matching browser/Java workbench theme, with original document mascot, responsive illustrated cards, accessible focus styles, reduced-motion support, and a reproducible `website-dist/` build. The homepage includes a "What's new" release-notes preview, clearly labeled as unreleased.
 - Source & Review user guide and current documentation for development builds, schema compatibility, and v0.5.0 release preparation.
 - Read-only source viewer highlighting the selected FAQ's exact original passages, with a stacked layout on narrow screens.
 - Per-FAQ Needs review / Approved status, persisted in saved projects and optional browser autosave.
@@ -19,6 +19,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Filters affect only the review list; saving, export preview, and all export formats retain every FAQ in draft order.
 - Export formats now open with PDF first and Word (.docx) second; the default download name uses `.pdf`.
 - GitHub Actions now uses Node 24-based checkout/setup-java actions and pins Ubuntu 24.04 to avoid runner-label migration notices.
+- The v0.5.0 release gate validates **Java 21–26** with Java 21-compatible bytecode. Java 27 is deferred, not declared incompatible: an earlier CI run failed with HTTP 504 during JDK download, before Doc2FAQ tests ran.
 - Release-candidate source version is 0.5.0; v0.4.0 remains the published release until the new artifacts are validated and released.
 
 ## 0.4.0 — 2026-10-29

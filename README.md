@@ -10,6 +10,8 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
 ## Current source: v0.5.0 release candidate — Source & Review
 
+The **approved Doc2FAQ design** introduces a playful, illustrated homepage and a matching responsive FAQ workbench. Visit the [product homepage](https://okantiktas.com/projects/doc2faq/) for the overview or open the [interactive browser demo](https://okantiktas.com/projects/doc2faq/demo/) to try local document import, review, and export. The new design and demo are staged for deployment; the URLs may still show the earlier version until the website changes are reviewed and published. See [the v0.5.0 release notes](CHANGELOG.md#050--unreleased-release-candidate) for the complete changes and [the design system](docs/DESIGN-SYSTEM.md) for colors, components, and accessibility choices.
+
 - **Source beside answer:** select **View source beside answer** on an FAQ to highlight all of its original passages in a read-only document viewer beside the review editor on desktop (stacked on smaller screens). References still use extracted-text lines, not PDF page numbers. Manual FAQs have no automatic reference.
 - **Review status:** FAQs start as **Needs review**. Mark a complete answer **Approved** after checking it. Editing its question or answer, or merging FAQs, returns it to **Needs review**. Moving an item preserves approval; Undo restores the status from before a removal or merge.
 - **Search and review filters:** combine a case-insensitive question/answer search with **All statuses**, **Needs review**, or **Approved**. The summary shows visible, approved, and pending counts. **Clear filters** restores the full list. Filters never change what is saved, previewed, or exported: all FAQs remain included, and incomplete entries still block export.
@@ -60,7 +62,7 @@ For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklis
 
 ## Requirements
 
-- To run a release download: **Java 21 or newer**. The JAR targets Java 21 bytecode; GitHub Actions checks the released JDK versions 21–27 before v0.5.0 publication. Newer future Java versions are not automatically guaranteed compatible. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
+- To run a release download: **Java 21 or newer**. The JAR targets Java 21 bytecode; v0.5.0's **required automated compatibility matrix is Java 21–26**. Java 27 is **not yet part of the verified support matrix**; this does not mean the application is known to be incompatible, only that its validation is deferred to a later release. Newer Java versions are not automatically guaranteed compatible. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
 
 To build from source:
 
