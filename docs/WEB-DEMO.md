@@ -1,6 +1,6 @@
 # Browser demo and website deployment
 
-The public-facing route is `https://okantiktas.com/projects/doc2faq/`. The portfolio's existing singular convention, `/project/doc2faq/`, redirects to it. The homepage's Doc2FAQ card links to the interactive demo.
+The public-facing homepage route is `https://okantiktas.com/projects/doc2faq/`. Its **interactive demo** lives at `https://okantiktas.com/projects/doc2faq/demo/`. The portfolio's existing singular convention, `/project/doc2faq/`, redirects to the product homepage. The approved light, outlined, illustrated design is documented in [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
 
 ## What visitors can try
 
@@ -26,18 +26,20 @@ Run from the repository root with Node.js:
 
 ```sh
 node --test src/test/js/*.test.cjs
-node scripts/build-web-demo.mjs
+node scripts/build-website.mjs
 ```
 
-The builder creates ignored `demo-dist/` from the actual app frontend, shared project validator, stylesheet, and background. It replaces backend requests with the browser-only adapter in `web-demo/engine.js`, routes document import and binary export through `web-demo/documents.js`, keeps PDF/Word options available, uses relative asset paths with content-hash cache versions, fills the source-build version, and adds demo disclosure and homepage/source/download links. It does not modify the Java application's served UI.
+The builder creates ignored `demo-dist/` from the actual app frontend, shared project validator, stylesheet, and background. It replaces backend requests with the browser-only adapter in `web-demo/engine.js`, routes document import and binary export through `web-demo/documents.js`, keeps PDF/Word options available, uses relative asset paths with content-hash cache versions, fills the source-build version, and adds demo disclosure and homepage/source/download links. The approved retro theme also styles the Java application's UI without changing its JavaScript behavior.
 
-Copy the complete contents of `demo-dist/` into `projects/doc2faq/` in the private `OKAN-SOFTWARE/okantiktas.com` repository. Preserve relative filenames. Update the Doc2FAQ homepage card to the demo route. Keep `/project/doc2faq/index.html` as a redirect with a visible fallback link. Do not replace the rest of the portfolio or its activity scripts.
+The `build-website.mjs` step then creates ignored `website-dist/` containing the approved **Doc2FAQ marketing homepage** and the working, equally styled `demo/` subdirectory. It rewrites navigation to relative URLs that are valid under `/projects/doc2faq/`.
+
+Copy the complete contents of **`website-dist/`** into `projects/doc2faq/` in the private `OKAN-SOFTWARE/okantiktas.com` repository. Preserve the `demo/` subdirectory and relative filenames. The Doc2FAQ homepage card may link to the new product homepage. Keep `/project/doc2faq/index.html` as a redirect with a visible fallback link. Do not replace the rest of the portfolio or its activity scripts.
 
 The portfolio is hosted through its existing GitHub-main → Hostinger deployment. Pushing source and observing a live deployment are separate steps: verify the actual custom-domain route after deployment before reporting it live. Do not deploy the full Java app to static hosting or change DNS to add this subdirectory.
 
 ## Verify before publishing
 
-- Both demo routes resolve; homepage, source, and download links work.
+- Both homepage routes and the `/projects/doc2faq/demo/` application resolve; source, download and return links work.
 - Examples and pasted TXT/Markdown work in both modes; text source references match exactly.
 - Source highlights remain stable while typing, including on mobile.
 - Approvals persist after save/open and optional autosave/reload; edits/merges reset approval.

@@ -9,7 +9,7 @@ Use JDK 21+, Maven 3.6.3+, and Node.js. CI compiles the application for Java 21 
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-node scripts/build-web-demo.mjs
+node scripts/build-website.mjs
 java -jar target/doc2faq-0.5.0.jar
 ```
 
@@ -48,7 +48,7 @@ GitHub Actions runs this smoke check on every push/PR. On Windows without Bash, 
    git rev-parse HEAD
    mvn -B -ntp clean verify
    node --test src/test/js/*.test.cjs
-   node scripts/build-web-demo.mjs
+   node scripts/build-website.mjs
    java -jar target/doc2faq-0.5.0.jar
    ```
 

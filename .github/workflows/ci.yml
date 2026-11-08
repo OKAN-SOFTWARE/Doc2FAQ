@@ -36,6 +36,12 @@ jobs:
         if: matrix.java == '21'
         run: node --test src/test/js/*.test.cjs
 
-      - name: Build static browser demo
+      - name: Build approved homepage and static browser demo
         if: matrix.java == '21'
-        run: node scripts/build-web-demo.mjs
+        run: |
+          node scripts/build-website.mjs
+          test -f website-dist/index.html
+          test -f website-dist/styles.css
+          test -f website-dist/demo/index.html
+          test -f website-dist/demo/retro.css
+          node scripts/verify-website-build.mjs

@@ -52,7 +52,7 @@ The document placeholder now uses neutral Q&A prompts, and Generate Mode's sampl
 
 ## Try it in your browser
 
-[Open the interactive browser demo](https://okantiktas.com/projects/doc2faq/) · [Source & Review user guide](docs/USER-GUIDE.md) · [Demo capabilities and deployment](docs/WEB-DEMO.md)
+[Doc2FAQ homepage](https://okantiktas.com/projects/doc2faq/) · [Try the interactive browser demo](https://okantiktas.com/projects/doc2faq/demo/) · [Source & Review user guide](docs/USER-GUIDE.md) · [Demo capabilities and deployment](docs/WEB-DEMO.md) · [Approved design system](docs/DESIGN-SYSTEM.md)
 
 The demo processes pasted text and TXT/Markdown in your browser, using simplified rules. Try both drafting modes, source highlighting, editing, approval status, duplicate review, search/filters, saved projects, and Markdown/JSON/HTML exports. PDF/Word (.docx) import and export also run locally in the browser; PDF uploads are limited to 5 MB and 50 pages, and DOCX to 5 MB. Scanned PDFs need external OCR. The demo does not run a Java backend and its drafting rules remain simplified. Document libraries load from a version-pinned CDN when needed; document content is not uploaded. Browser PDF export uses standard Latin fonts and suggests Word when a character cannot be represented. The development demo may include features newer than the latest release download.
 
