@@ -26,3 +26,58 @@ button,input,select,textarea{font-family:'DM Sans',system-ui,sans-serif}button:f
 @media(max-width:800px){.app-shell{padding:0 22px}.site-header{height:auto;min-height:89px;flex-wrap:wrap;padding:15px 0}.preview-pill{order:3;width:100%;justify-content:center}.hero{grid-template-columns:1fr;gap:40px}.hero-art{max-width:520px}.workspace-grid{grid-template-columns:1fr}.results-list{max-height:none}}
 @media(max-width:520px){.app-shell{padding:0 16px}.brand{font-size:24px}.retro-nav{font-size:10px;gap:10px}.hero{padding:52px 0}.hero h1{font-size:47px}.hero-copy{font-size:14px}.hero-art{display:none}.workspace h2{font-size:28px}.panel{padding:17px;box-shadow:4px 5px 0 var(--line)}.result-actions{display:grid;grid-template-columns:1fr 1fr}.result-actions input{grid-column:1/-1}.result-actions .export-select{grid-column:1/-1}.result-actions button{white-space:normal}.field-label{letter-spacing:.08em}.review-filters{align-items:flex-start}.review-toolbar{gap:6px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button{transition:none}}
+/* Mobile workspace: prevent horizontal scrolling and keep every control thumb-friendly. */
+@media(max-width:650px){
+  .site-header{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;height:auto;padding:17px 0}
+  .retro-nav{margin-left:0;display:flex;justify-content:flex-start;flex-wrap:wrap;gap:12px 20px;line-height:1.5}
+  .retro-nav a{min-height:34px;display:inline-flex;align-items:center}
+  .preview-pill{order:initial;width:100%;min-height:38px;justify-content:center}
+  .hero h1{font-size:clamp(38px,10vw,53px);overflow-wrap:anywhere}
+  .hero-chips{gap:8px}
+  .workspace-heading{align-items:start;gap:9px}
+  .workspace-heading .step-number{flex-shrink:0}
+  .project-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:17px}
+  .project-name,.save-work-help,.autosave-controls{grid-column:1/-1;min-width:0}
+  #save-project-btn,#open-project-btn{width:100%;min-width:0;white-space:normal}
+  .autosave-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}
+  .autosave-controls label{min-width:0}
+  #clear-saved-btn{width:100%;min-height:44px;white-space:normal}
+  #save-status{overflow-wrap:anywhere}
+  .panel,.project-toolbar,.workspace-grid{min-width:0}
+  .button,.editor-action,.mode-select,.export-select,.review-filters select,.review-status-select{min-height:44px}
+  .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+  .actions #generate-btn{grid-column:1/-1;min-width:0}
+  .actions #choose-file-btn,.actions #sample-btn{min-width:0;white-space:normal}
+  .result-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+  .result-actions input,.result-actions .export-select{grid-column:1/-1;width:100%;min-width:0}
+  .result-actions button{min-width:0;white-space:normal;padding:10px}
+  .review-filters{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .review-filters .field-label{grid-column:1/-1}
+  .review-filters select{width:100%;min-width:0}
+  .review-filters .button{white-space:normal}
+  .review-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .review-toolbar .button{min-width:0;white-space:normal}
+  .export-options{align-items:stretch;flex-direction:column;gap:10px}
+  .export-options .button{width:100%}
+  .faq-editor{padding:12px}
+  .faq-editor-heading{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .faq-editor-actions{flex-wrap:wrap;gap:7px}
+  .editor-action{min-height:42px}
+  .source-viewer{min-width:0}
+  .input-meta{gap:8px;flex-wrap:wrap}
+  #export-preview{width:calc(100% - 20px);padding:15px}
+  #preview-content{padding:14px}
+  input[type=text],input[type=search],select,textarea{font-size:16px}
+}
+@media(max-width:370px){
+  .app-shell{padding:0 12px}
+  .brand{font-size:22px}
+  .panel{padding:14px}
+  .panel-top{gap:8px}
+  .hero h1{font-size:36px}
+  .workspace h2{font-size:clamp(25px,8vw,28px)}
+  .review-toolbar{grid-template-columns:minmax(0,1fr)}
+  .review-toolbar .button{width:100%}
+  .input-meta{font-size:10px}
+}
+
