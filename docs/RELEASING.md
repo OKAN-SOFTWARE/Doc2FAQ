@@ -1,19 +1,27 @@
 # Doc2FAQ release checklist
 
-**Current source:** `0.5.0-SNAPSHOT`. **Latest published download:** v0.4.0. The next planned release is **v0.5.0 — Source & Review**. Merging source changes does not publish a release or update an installed JAR. Keep existing tags and assets unchanged.
+**Release-candidate branch:** `0.5.0`. **Latest published download:** v0.4.0. The next planned release is **v0.5.0 — Source & Review**. The release-candidate branch is not a published release. Merging source changes does not publish a release or update an installed JAR. Keep existing tags and assets unchanged.
 
-## Validate the development build
+## Validate the release candidate
 
-Use JDK 21, Maven 3.6.3+, and Node.js:
+Use JDK 21+, Maven 3.6.3+, and Node.js. CI compiles the application for Java 21 and runs Java tests plus a packaged-JAR smoke check on JDKs 21 through 27. All matrix jobs must succeed before publication:
 
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
 node scripts/build-web-demo.mjs
-java -jar target/doc2faq-0.5.0-SNAPSHOT.jar
+java -jar target/doc2faq-0.5.0.jar
 ```
 
 Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Test the packaged JAR, not only a static frontend preview:
+
+On Linux or Git Bash, the optional automated JAR smoke check runs the packaged server locally, tests health, loads the frontend, and extracts an FAQ before stopping it:
+
+```sh
+bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar
+```
+
+GitHub Actions runs this smoke check on every push/PR. On Windows without Bash, use the equivalent manual checks below.
 
 1. Import TXT, Markdown, PDF, and DOCX. Extract explicit questions and generate from ordinary sections; inspect exact excerpts and text-line ranges. Scanned PDFs must explain the OCR limitation.
 2. Select an FAQ's source viewer and check all highlights, including multiple references after merge. Try a manual FAQ and HTML-like source text. Check desktop side-by-side and mobile stacked layouts. Typing in questions/answers must preserve page and source scroll positions.
@@ -30,7 +38,7 @@ Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Test the
 ## Prepare v0.5.0
 
 1. Review and merge development changes after CI and packaged-JAR checks pass.
-2. Change `pom.xml` from `0.5.0-SNAPSHOT` to `0.5.0`; date the changelog section and update README source/run commands and download links. Keep historical v0.4.0 notes accurate. Review this release-preparation change.
+2. Review the release-candidate branch with `pom.xml` already at `0.5.0`. Verify the README and guide match the JAR name. Leave v0.4.0 labeled as the latest published download until v0.5.0 actually ships. Date the changelog and update download links at publication. Keep historical v0.4.0 notes accurate.
 3. Update a clean checkout to the merged release commit, then build again:
 
    ```cmd
@@ -43,6 +51,8 @@ Open `http://localhost:8080` (or use `--server.port=8081` if occupied). Test the
    node scripts/build-web-demo.mjs
    java -jar target/doc2faq-0.5.0.jar
    ```
+
+   On Linux or Git Bash, also run `bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar` against the clean build. The application must be stopped before the manual JAR launch, unless you specify an alternate port.
 
 4. Confirm a clean working tree and record the exact SHA. Repeat the packaged-JAR smoke check. Confirm that v0.5.0 does not already exist as a tag or release.
 

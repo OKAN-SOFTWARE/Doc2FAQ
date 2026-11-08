@@ -8,14 +8,14 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
 > **Latest published download: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
 
-## Current source: v0.5.0-SNAPSHOT — Source & Review
+## Current source: v0.5.0 release candidate — Source & Review
 
 - **Source beside answer:** select **View source beside answer** on an FAQ to highlight all of its original passages in a read-only document viewer beside the review editor on desktop (stacked on smaller screens). References still use extracted-text lines, not PDF page numbers. Manual FAQs have no automatic reference.
 - **Review status:** FAQs start as **Needs review**. Mark a complete answer **Approved** after checking it. Editing its question or answer, or merging FAQs, returns it to **Needs review**. Moving an item preserves approval; Undo restores the status from before a removal or merge.
 - **Search and review filters:** combine a case-insensitive question/answer search with **All statuses**, **Needs review**, or **Approved**. The summary shows visible, approved, and pending counts. **Clear filters** restores the full list. Filters never change what is saved, previewed, or exported: all FAQs remain included, and incomplete entries still block export.
 - **Saved work compatibility:** approval status is preserved in project downloads and optional autosave. New saves use project schema 2; v0.4 schema-1 files still open with FAQs marked Needs review. Schema-2 files require v0.5 or later to reopen.
 
-Development builds use `0.5.0-SNAPSHOT` in `pom.xml` (`target/doc2faq-0.5.0-SNAPSHOT.jar`). The latest published download remains v0.4.0 until a new release is validated and published.
+The release-candidate branch uses `0.5.0` in `pom.xml` (`target/doc2faq-0.5.0.jar`). The latest published download remains v0.4.0 until the release candidate passes validation and v0.5.0 is published. This branch is not itself a published release.
 
 ## New in v0.4.0
 
@@ -60,7 +60,7 @@ For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklis
 
 ## Requirements
 
-- To run a release download: **Java 21**. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
+- To run a release download: **Java 21 or newer**. The JAR targets Java 21 bytecode; GitHub Actions checks the released JDK versions 21–27 before v0.5.0 publication. Newer future Java versions are not automatically guaranteed compatible. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
 
 To build from source:
 
@@ -182,7 +182,7 @@ After updating your checkout to the latest `main`, run these commands from the d
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.5.0-SNAPSHOT.jar
+java -jar target/doc2faq-0.5.0.jar
 ```
 
 The JavaScript checks require Node.js. Keep the terminal open while the app runs, and use **Ctrl+C** to stop it. Open **http://localhost:8080** and refresh the browser to load the updated frontend.
@@ -190,7 +190,7 @@ The JavaScript checks require Node.js. Keep the terminal open while the app runs
 If port 8080 is occupied, stop the previous Doc2FAQ process or use an alternate port:
 
 ```cmd
-java -jar target/doc2faq-0.5.0-SNAPSHOT.jar --server.port=8081
+java -jar target/doc2faq-0.5.0.jar --server.port=8081
 ```
 
 Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.

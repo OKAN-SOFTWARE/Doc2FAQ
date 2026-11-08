@@ -2,7 +2,7 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
-## [0.5.0] — Unreleased
+## [0.5.0] — Unreleased (release candidate)
 
 ### Added
 - Browser PDF/Word (.docx) import and paginated export with local processing, PDF page/file/text limits, bounded DOCX XML decompression, optional references, and clear unsupported-file/font errors.
@@ -16,7 +16,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Editing questions or answers and merging FAQs reset approval; incomplete FAQs cannot be approved.
 - Project schema 2 stores review status and upgrades schema-1 projects with Needs review defaults. Older application versions reject schema-2 files instead of silently discarding approval state.
 - Filters affect only the review list; saving, export preview, and all export formats retain every FAQ in draft order.
-- Development version is 0.5.0-SNAPSHOT; v0.4.0 remains the published release.
+- Release-candidate source version is 0.5.0; v0.4.0 remains the published release until the new artifacts are validated and released.
 
 ## 0.4.0 — 2026-10-29
 

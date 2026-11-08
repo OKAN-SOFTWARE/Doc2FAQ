@@ -10,19 +10,29 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    name: Java ${{ matrix.java }} compatibility
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['21', '22', '23', '24', '25', '26', '27']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ matrix.java }}
           cache: maven
       - name: Build and test
-        run: mvn -B -ntp verify
+        run: mvn -B -ntp clean verify
+
+      - name: Smoke test packaged Java app
+        run: bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar
 
       - name: Test browser export safety
+        if: matrix.java == '21'
         run: node --test src/test/js/*.test.cjs
 
       - name: Build static browser demo
+        if: matrix.java == '21'
         run: node scripts/build-web-demo.mjs

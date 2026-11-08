@@ -1,6 +1,6 @@
 # Doc2FAQ — Source & Review guide
 
-This guide describes the `0.5.0-SNAPSHOT` source build. The latest published v0.4.0 download does not include the new source viewer or approval filters. See the [README](../README.md) for installation and [browser-demo comparison](WEB-DEMO.md) for the website's supported features.
+This guide describes the `0.5.0` release-candidate source build, which has not yet been published. The latest published v0.4.0 download does not include the new source viewer or approval filters. See the [README](../README.md) for installation and [browser-demo comparison](WEB-DEMO.md) for the website's supported features.
 
 ## Create a draft
 
