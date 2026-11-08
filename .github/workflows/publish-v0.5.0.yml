@@ -54,7 +54,7 @@ jobs:
           mvn -B -ntp clean verify
           bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar
 
-      - name: Verify browser demo and approved homepage
+      - name: Verify browser demo and Doc2FAQ homepage
         run: |
           node --test src/test/js/*.test.cjs
           node scripts/build-website.mjs

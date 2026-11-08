@@ -36,7 +36,7 @@ jobs:
         if: matrix.java == '21'
         run: node --test src/test/js/*.test.cjs
 
-      - name: Build approved homepage and static browser demo
+      - name: Build Doc2FAQ homepage and static browser demo
         if: matrix.java == '21'
         run: |
           node scripts/build-website.mjs

@@ -34,7 +34,7 @@ GitHub Actions runs this smoke check on every push/PR. On Windows without Bash, 
 9. Import `TEst Data.pdf`, check the suggested `testdata-Doc2FAQ.pdf`, rename it, and verify the download. Check centered titles, PDF Lato fonts, page numbers, long answers/tokens, Unicode, and page breaks. Unsupported PDF glyphs must suggest Word. HTML must escape document markup.
 10. Change source/mode, clear the document, or open another project during pending imports/drafting/exports. Old results must not replace or download current work. Check keyboard focus, mobile widths, and reduced motion.
 11. Follow [WEB-DEMO.md](WEB-DEMO.md) for the separate static browser demo; verify its feature disclosure and website links. The demo cannot substitute for packaged-JAR testing.
-12. Review the [approved homepage design](DESIGN-SYSTEM.md), including responsive layouts, readable focus states, reduced-motion behavior, and the **What's new / v0.5.0 preview** release-notes area. Confirm that an unreleased candidate is not presented as a published download. Keep browser context menus and developer tools available; browser UI restrictions are not an application security control.
+12. Review the [Doc2FAQ design system](DESIGN-SYSTEM.md), including responsive layouts, readable focus states, reduced-motion behavior, and the **What's new** release-notes area. Confirm that an unreleased candidate is not presented as a published download. Keep browser context menus and developer tools available; browser UI restrictions are not an application security control.
 
 ## Prepare v0.5.0
 

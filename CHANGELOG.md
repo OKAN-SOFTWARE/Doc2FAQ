@@ -8,7 +8,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Browser PDF/Word (.docx) import and paginated export with local processing, PDF page/file/text limits, bounded DOCX XML decompression, optional references, and clear unsupported-file/font errors.
 - Browser PDF exports now embed bundled DejaVu Sans regular/bold font subsets instead of standard Helvetica, fixing Turkish and extended-Unicode text copied from web pages; unchanged Word exports continue to preserve the source characters.
 - Browser-only website demo built from the shared frontend, with simplified text drafting, explicit PDF/Word limitations, homepage navigation, and text exports.
-- Approved Doc2FAQ landing page and matching browser/Java workbench theme, with original document mascot, responsive illustrated cards, accessible focus styles, reduced-motion support, and a reproducible `website-dist/` build. The homepage includes a "What's new" release-notes preview, clearly labeled as unreleased.
+- Redesigned Doc2FAQ homepage and matching browser/Java workbench with an original document mascot, responsive illustrated cards, accessible focus styles, reduced-motion support, and a reproducible `website-dist/` build. The "What's new" section distinguishes development previews from published downloads.
 - Source & Review user guide and current documentation for development builds, schema compatibility, and v0.5.0 release preparation.
 - Read-only source viewer highlighting the selected FAQ's exact original passages, with a stacked layout on narrow screens.
 - Per-FAQ Needs review / Approved status, persisted in saved projects and optional browser autosave.

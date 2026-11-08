@@ -1,6 +1,6 @@
 # Doc2FAQ v0.5.0 — Source & Review
 
-This release makes Doc2FAQ easier to review, safer to export, and more welcoming on desktop and mobile, with the approved illustrated Doc2FAQ design.
+I built this release to make it easier to check every answer against its source, keep track of reviewed FAQs, and export polished results. I also redesigned the interface for desktop and mobile.
 
 ### Highlights
 
