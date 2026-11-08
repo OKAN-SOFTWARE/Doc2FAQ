@@ -2,7 +2,7 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
-## [0.5.0] — Unreleased (release candidate)
+## [0.5.0] — 2026-11-08
 
 ### Added
 - Browser PDF/Word (.docx) import and paginated export with local processing, PDF page/file/text limits, bounded DOCX XML decompression, optional references, and clear unsupported-file/font errors.
@@ -22,7 +22,7 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - **Clear saved data** is now a prominent, high-contrast action with a confirmation prompt. Cancel leaves the browser's saved draft intact; confirming removes only browser storage and keeps the current workspace open.
 - GitHub Actions now uses Node 24-based checkout/setup-java actions and pins Ubuntu 24.04 to avoid runner-label migration notices.
 - The v0.5.0 release gate validates **Java 21–26** with Java 21-compatible bytecode. Java 27 formal support is deferred, not declared incompatible: a transient JDK-download HTTP 504 caused an initial CI failure, and a later rerun **passed Java 27 build/tests and packaged-JAR smoke checks**.
-- Release-candidate source version is 0.5.0; v0.4.0 remains the published release until the new artifacts are validated and released.
+- Published v0.5.0 with a verified standalone JAR, Windows ZIP, release notes, and SHA-256 checksums.
 
 ## 0.4.0 — 2026-10-29
 
