@@ -7,6 +7,17 @@ const vm = require("node:vm");
 const scriptPath = path.resolve(__dirname, "../../main/resources/static/app.js");
 const source = readFileSync(scriptPath, "utf8");
 
+test("PDF and Word are the first two export choices, with PDF selected by default", () => {
+  const html = readFileSync(path.resolve(__dirname, "../../main/resources/static/index.html"), "utf8");
+  const menu = html.match(/<select id="export-format"[^>]*>([\s\S]*?)<\/select>/)?.[1];
+  assert.ok(menu, "Export format selector is present");
+  const options = [...menu.matchAll(/<option value="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(options, ["pdf", "docx", "markdown", "json", "html"]);
+  assert.match(menu, /<option value="pdf" selected>PDF<\/option>/);
+  assert.match(html, /id="download-extension"[^>]*>\.pdf<\/span>/);
+  assert.match(html, /id="download-btn"[^>]*>Download \.pdf<\/button>/);
+});
+
 // This app has no frontend dependencies. Test the actual export functions with tiny DOM stubs.
 const stub = () => ({value: "extract", addEventListener() {}});
 const context = {Doc2FaqProject: require("../../main/resources/static/project.js"), document: {getElementById: stub}};

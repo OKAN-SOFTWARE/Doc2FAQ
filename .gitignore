@@ -17,3 +17,4 @@ Thumbs.db
 
 # Generated browser demo (built from tracked sources)
 /demo-dist/
+/website-dist/

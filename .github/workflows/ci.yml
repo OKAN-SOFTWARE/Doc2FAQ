@@ -2,6 +2,8 @@ name: Verify Doc2FAQ
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
@@ -9,20 +11,55 @@ permissions:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    name: Java ${{ matrix.java }} compatibility
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        java: ['21', '22', '23', '24', '25', '26']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ matrix.java }}
           cache: maven
       - name: Build and test
-        run: mvn -B -ntp verify
+        run: mvn -B -ntp clean verify
+
+      - name: Smoke test packaged Java app
+        run: bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar
 
       - name: Test browser export safety
+        if: matrix.java == '21'
         run: node --test src/test/js/*.test.cjs
 
-      - name: Build static browser demo
-        run: node scripts/build-web-demo.mjs
+      - name: Build Doc2FAQ homepage and static browser demo
+        if: matrix.java == '21'
+        run: |
+          node scripts/build-website.mjs
+          test -f website-dist/index.html
+          test -f website-dist/styles.css
+          test -f website-dist/demo/index.html
+          test -f website-dist/demo/retro.css
+          node scripts/verify-website-build.mjs
+
+  # The main-branch ruleset requires a check named "build-and-test".
+  # Keep that stable status only after every Java matrix job succeeds.
+  required-status:
+    name: build-and-test
+    runs-on: ubuntu-24.04
+    needs: [build-and-test]
+    if: ${{ always() }}
+    steps:
+      - name: Require all Java compatibility jobs to pass
+        env:
+          MATRIX_RESULT: ${{ needs['build-and-test'].result }}
+        run: |
+          if [ "$MATRIX_RESULT" != "success" ]; then
+            echo "Java 21–26 compatibility checks did not all pass: $MATRIX_RESULT"
+            exit 1
+          fi
+          echo "All Java 21–26 compatibility checks passed."

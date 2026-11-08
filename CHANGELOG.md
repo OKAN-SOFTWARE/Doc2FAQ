@@ -2,11 +2,13 @@
 
 All notable Doc2FAQ changes are recorded here. Version numbers follow semantic versioning; entries describe shipped source functionality and do not imply an external AI service.
 
-## [0.5.0] — Unreleased
+## [0.5.0] — Unreleased (release candidate)
 
 ### Added
 - Browser PDF/Word (.docx) import and paginated export with local processing, PDF page/file/text limits, bounded DOCX XML decompression, optional references, and clear unsupported-file/font errors.
+- Browser PDF exports now embed bundled DejaVu Sans regular/bold font subsets instead of standard Helvetica, fixing Turkish and extended-Unicode text copied from web pages; unchanged Word exports continue to preserve the source characters.
 - Browser-only website demo built from the shared frontend, with simplified text drafting, explicit PDF/Word limitations, homepage navigation, and text exports.
+- Redesigned Doc2FAQ homepage and matching browser/Java workbench with an original document mascot, responsive illustrated cards, accessible focus styles, reduced-motion support, and a reproducible `website-dist/` build. The "What's new" section distinguishes development previews from published downloads.
 - Source & Review user guide and current documentation for development builds, schema compatibility, and v0.5.0 release preparation.
 - Read-only source viewer highlighting the selected FAQ's exact original passages, with a stacked layout on narrow screens.
 - Per-FAQ Needs review / Approved status, persisted in saved projects and optional browser autosave.
@@ -16,7 +18,11 @@ All notable Doc2FAQ changes are recorded here. Version numbers follow semantic v
 - Editing questions or answers and merging FAQs reset approval; incomplete FAQs cannot be approved.
 - Project schema 2 stores review status and upgrades schema-1 projects with Needs review defaults. Older application versions reject schema-2 files instead of silently discarding approval state.
 - Filters affect only the review list; saving, export preview, and all export formats retain every FAQ in draft order.
-- Development version is 0.5.0-SNAPSHOT; v0.4.0 remains the published release.
+- Export formats now open with PDF first and Word (.docx) second; the default download name uses `.pdf`.
+- **Clear saved data** is now a prominent, high-contrast action with a confirmation prompt. Cancel leaves the browser's saved draft intact; confirming removes only browser storage and keeps the current workspace open.
+- GitHub Actions now uses Node 24-based checkout/setup-java actions and pins Ubuntu 24.04 to avoid runner-label migration notices.
+- The v0.5.0 release gate validates **Java 21–26** with Java 21-compatible bytecode. Java 27 formal support is deferred, not declared incompatible: a transient JDK-download HTTP 504 caused an initial CI failure, and a later rerun **passed Java 27 build/tests and packaged-JAR smoke checks**.
+- Release-candidate source version is 0.5.0; v0.4.0 remains the published release until the new artifacts are validated and released.
 
 ## 0.4.0 — 2026-10-29
 

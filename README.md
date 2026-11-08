@@ -8,19 +8,21 @@ Created by **Okan Tiktas** · [OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE).
 
 > **Latest published download: v0.4.0 — Review, Save & Export.** Download the ready-to-run JAR or Windows ZIP from [GitHub Releases](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/tag/v0.4.0).
 
-## Current source: v0.5.0-SNAPSHOT — Source & Review
+## Current source: v0.5.0 release candidate — Source & Review
+
+I redesigned Doc2FAQ with an illustrated homepage and a responsive FAQ workbench. Visit the [product homepage](https://okantiktas.com/projects/doc2faq/) for an overview, or try the [interactive browser demo](https://okantiktas.com/projects/doc2faq/demo/) to import documents, review FAQs, and export the results directly in your browser. The browser demo and downloadable Java application have different processing engines, so their FAQ suggestions may differ. See the [v0.5.0 changes](CHANGELOG.md#050--unreleased-release-candidate) and [design system](docs/DESIGN-SYSTEM.md) for details.
 
 - **Source beside answer:** select **View source beside answer** on an FAQ to highlight all of its original passages in a read-only document viewer beside the review editor on desktop (stacked on smaller screens). References still use extracted-text lines, not PDF page numbers. Manual FAQs have no automatic reference.
 - **Review status:** FAQs start as **Needs review**. Mark a complete answer **Approved** after checking it. Editing its question or answer, or merging FAQs, returns it to **Needs review**. Moving an item preserves approval; Undo restores the status from before a removal or merge.
 - **Search and review filters:** combine a case-insensitive question/answer search with **All statuses**, **Needs review**, or **Approved**. The summary shows visible, approved, and pending counts. **Clear filters** restores the full list. Filters never change what is saved, previewed, or exported: all FAQs remain included, and incomplete entries still block export.
 - **Saved work compatibility:** approval status is preserved in project downloads and optional autosave. New saves use project schema 2; v0.4 schema-1 files still open with FAQs marked Needs review. Schema-2 files require v0.5 or later to reopen.
 
-Development builds use `0.5.0-SNAPSHOT` in `pom.xml` (`target/doc2faq-0.5.0-SNAPSHOT.jar`). The latest published download remains v0.4.0 until a new release is validated and published.
+The release-candidate branch uses `0.5.0` in `pom.xml` (`target/doc2faq-0.5.0.jar`). The latest published download remains v0.4.0 until the release candidate passes validation and v0.5.0 is published. This branch is not itself a published release.
 
 ## New in v0.4.0
 
 - **Save work / Open saved work:** a versioned JSON file preserves source text, title, mode, draft order, edits, original excerpts, and duplicate-review choices. Incomplete FAQs can be saved too. Project files are limited to 4 MB and validated before replacing the workspace.
-- **Optional browser autosave:** off by default. Enabling it stores the complete source and draft on this browser's origin and restores them on reload. Disabling autosave or using **Clear saved data** removes Doc2FAQ's saved data without clearing your open workspace. Storage failures leave the draft open; use **Save work** as a backup.
+- **Optional browser autosave:** off by default. Enabling it stores the complete source and draft on this browser's origin and restores them on reload. The highlighted **Clear saved data** button asks for confirmation before removing the browser copy; canceling preserves it, and confirming leaves your current workspace open. Disabling autosave also removes the stored copy. Storage failures leave the draft open; use **Save work** as a backup.
 - **Source references:** expand **Show source** to see the original section, extracted-text line range, and exact passage. Edited questions and answers are marked for rechecking. References use text lines, not PDF page numbers; manually added FAQs have no automatic reference.
 - **Duplicate review:** distinct passages are retained even if their questions cover the same topic. Similar questions are flagged using a word-overlap heuristic. Choose **Keep both** or **Merge into this FAQ**. Merging keeps both answers and all source references; **Undo removal / merge** restores the previous items until another FAQ edit, addition, reorder, or review choice. Exact duplicate question/answer pairs are still filtered. The maximum remains 30 FAQs.
 - **PDF and Word export:** edited content, a centered document title, readable page layout, metadata, and page numbers. Optionally include section/line references and edited-answer notices. PDF embeds Lato Regular and Bold (see `src/main/resources/fonts/LICENSE-Lato.txt`); if text contains a glyph that font cannot represent, export returns an error and suggests DOCX.
@@ -52,15 +54,15 @@ The document placeholder now uses neutral Q&A prompts, and Generate Mode's sampl
 
 ## Try it in your browser
 
-[Open the interactive browser demo](https://okantiktas.com/projects/doc2faq/) · [Source & Review user guide](docs/USER-GUIDE.md) · [Demo capabilities and deployment](docs/WEB-DEMO.md)
+[Doc2FAQ homepage](https://okantiktas.com/projects/doc2faq/) · [Try the interactive browser demo](https://okantiktas.com/projects/doc2faq/demo/) · [Source & Review user guide](docs/USER-GUIDE.md) · [Demo capabilities and deployment](docs/WEB-DEMO.md) · [Design system](docs/DESIGN-SYSTEM.md)
 
-The demo processes pasted text and TXT/Markdown in your browser, using simplified rules. Try both drafting modes, source highlighting, editing, approval status, duplicate review, search/filters, saved projects, and Markdown/JSON/HTML exports. PDF/Word (.docx) import and export also run locally in the browser; PDF uploads are limited to 5 MB and 50 pages, and DOCX to 5 MB. Scanned PDFs need external OCR. The demo does not run a Java backend and its drafting rules remain simplified. Document libraries load from a version-pinned CDN when needed; document content is not uploaded. Browser PDF export uses standard Latin fonts and suggests Word when a character cannot be represented. The development demo may include features newer than the latest release download.
+The demo processes pasted text and TXT/Markdown in your browser, using simplified rules. Try both drafting modes, source highlighting, editing, approval status, duplicate review, search/filters, saved projects, and Markdown/JSON/HTML exports. PDF/Word (.docx) import and export also run locally in the browser; PDF uploads are limited to 5 MB and 50 pages, and DOCX to 5 MB. Scanned PDFs need external OCR. The demo does not run a Java backend and its drafting rules remain simplified. Document libraries load from a version-pinned CDN when needed; document content is not uploaded. Browser PDF export now embeds bundled DejaVu Sans fonts for Turkish and a wider range of Unicode characters; Word remains the fallback for unsupported scripts. The development demo may include features newer than the latest release download.
 
 For detailed changes, see [CHANGELOG.md](CHANGELOG.md). For the release checklist, see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Requirements
 
-- To run a release download: **Java 21**. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
+- To run a release download: **Java 21 or newer**. The JAR targets Java 21 bytecode; v0.5.0's **required automated compatibility matrix is Java 21–26**. Java 27 **passed an exploratory CI build and packaged-JAR smoke test** on November 8, 2026, but is not a committed v0.5.0 support target; formal support can follow in a later release. Newer Java versions are not automatically guaranteed compatible. The JAR works on Windows, macOS, and Linux; the Windows ZIP includes `Start-Doc2FAQ.cmd` and a quick-start guide. Extract the ZIP into a new folder, stop any older Doc2FAQ process, run the launcher, and open **http://localhost:8080**. Maven and Node.js are only needed to build and test from source.
 
 To build from source:
 
@@ -182,7 +184,7 @@ After updating your checkout to the latest `main`, run these commands from the d
 ```cmd
 mvn -B -ntp clean verify
 node --test src/test/js/*.test.cjs
-java -jar target/doc2faq-0.5.0-SNAPSHOT.jar
+java -jar target/doc2faq-0.5.0.jar
 ```
 
 The JavaScript checks require Node.js. Keep the terminal open while the app runs, and use **Ctrl+C** to stop it. Open **http://localhost:8080** and refresh the browser to load the updated frontend.
@@ -190,7 +192,7 @@ The JavaScript checks require Node.js. Keep the terminal open while the app runs
 If port 8080 is occupied, stop the previous Doc2FAQ process or use an alternate port:
 
 ```cmd
-java -jar target/doc2faq-0.5.0-SNAPSHOT.jar --server.port=8081
+java -jar target/doc2faq-0.5.0.jar --server.port=8081
 ```
 
 Then open **http://localhost:8081**. Merging source changes does not update an existing JAR or a running Java process; rebuild and restart to use the fixes. Published JARs must be built from the corresponding release commit.

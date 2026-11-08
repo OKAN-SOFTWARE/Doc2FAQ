@@ -787,6 +787,7 @@ $("autosave-toggle").addEventListener("change", () => {
   } catch { $("save-status").textContent = "Browser storage unavailable. Use Save work."; }
 });
 $("clear-saved-btn").addEventListener("click", () => {
+  if (!globalThis.confirm("Clear the data saved in this browser? Your current document and FAQ draft will stay open.")) return;
   clearTimeout(saveTimer);
   try {
     localStorage.removeItem(SAVE_KEY); localStorage.removeItem(AUTOSAVE_KEY);
