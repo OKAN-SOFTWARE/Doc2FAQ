@@ -59,11 +59,10 @@ GitHub Actions runs this smoke check on every push/PR. On Windows without Bash, 
 
 ## Publish tested artifacts
 
-1. Open [Draft a new release](https://github.com/OKAN-SOFTWARE/Doc2FAQ/releases/new).
-2. Tag the exact tested commit `v0.5.0`; title **Doc2FAQ v0.5.0 — Source & Review**.
-3. Copy the v0.5.0 changelog notes. Attach the tested `target/doc2faq-0.5.0.jar`, never `.jar.original` or a renamed old JAR.
-4. Also attach `Doc2FAQ-0.5.0-Windows.zip` with that exact JAR, `Start-Doc2FAQ.cmd`, and a quick-start README. The launcher must reference `doc2faq-0.5.0.jar`. Include `SHA256SUMS.txt` for both downloads; remove snapshot and older-version instructions from the new bundle.
-5. Review tag, commit, notes, and assets before publishing. Download the published assets separately, verify hashes and that the ZIP's JAR matches the standalone JAR, then run with Java 21. Confirm version, health, saved review status, source viewer, and PDF/Word exports.
-6. Rebuild/synchronize the website demo when its shared frontend changes. Verify the actual live route and update the portfolio link if needed.
+1. Merge the verified release candidate into `main`. The version-specific [release workflow](../.github/workflows/publish-v0.5.0.yml) runs on the first merge that adds it to `main`; it can also be retriggered manually using **Run workflow** after a fix. Do not create the `v0.5.0` tag or release in advance.
+2. That workflow checks for an existing release/tag, builds with Java 21, runs the packaged-JAR smoke and browser tests, and assembles `doc2faq-0.5.0.jar` and `Doc2FAQ-0.5.0-Windows.zip`. The ZIP contains the **same JAR**, `Start-Doc2FAQ.cmd`, and `WINDOWS-QUICK-START.md`. It verifies the archive and writes `SHA256SUMS.txt` for both downloads.
+3. **Only after every check passes**, the workflow creates the `v0.5.0` tag at the exact tested commit and publishes **Doc2FAQ v0.5.0 — Source & Review** with [release notes](RELEASE-NOTES-0.5.0.md) and all three files. If the release job fails, do not call it published; inspect the run, fix the cause, and rerun without replacing any existing tag or release.
+4. Inspect the published commit, notes and assets. Download the assets independently, verify hashes and the ZIP/JAR match, then start the published JAR on Java 21. Confirm the version, health, review status, source viewer, and PDF/Word exports.
+5. Date the changelog and update README and product-site release links to v0.5.0 after publication. Rebuild/synchronize the browser demo when shared frontend code changes. Verify the actual Hostinger custom-domain routes and links before calling the public website current.
 
 Accounts, billing, OCR, external AI, and public-server hardening remain separate work. The Java build is intended for local use; the static browser demo runs its simplified drafting on visitors' devices.

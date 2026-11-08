@@ -1,0 +1,96 @@
+name: Publish Doc2FAQ v0.5.0
+
+# First run automatically when this workflow lands on main. Manual reruns
+# remain available, but the existing-release check prevents duplicate tags.
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-v0.5.0.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: doc2faq-v0.5.0-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'OKAN-SOFTWARE/Doc2FAQ' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Refuse to replace an existing v0.5.0 release or tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.5.0 >/dev/null 2>&1; then
+            echo "v0.5.0 is already published. Refusing to overwrite it."
+            exit 1
+          fi
+          if [ -n "$(git tag -l v0.5.0)" ]; then
+            echo "The v0.5.0 tag already exists. Review it before publishing."
+            exit 1
+          fi
+
+      - name: Build and verify the release JAR
+        run: |
+          mvn -B -ntp clean verify
+          bash scripts/smoke-packaged-jar.sh target/doc2faq-0.5.0.jar
+
+      - name: Verify browser demo and approved homepage
+        run: |
+          node --test src/test/js/*.test.cjs
+          node scripts/build-website.mjs
+          node scripts/verify-website-build.mjs
+
+      - name: Package the Windows and standalone downloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release/staging/Doc2FAQ-0.5.0
+          cp target/doc2faq-0.5.0.jar release/doc2faq-0.5.0.jar
+          cp release/doc2faq-0.5.0.jar release/staging/Doc2FAQ-0.5.0/
+          cp packaging/Start-Doc2FAQ.cmd packaging/WINDOWS-QUICK-START.md release/staging/Doc2FAQ-0.5.0/
+          # Windows cmd.exe expects CRLF-terminated batch files.
+          sed -i 's/$/\r/' release/staging/Doc2FAQ-0.5.0/Start-Doc2FAQ.cmd
+          (
+            cd release/staging
+            zip -q -r ../Doc2FAQ-0.5.0-Windows.zip Doc2FAQ-0.5.0
+          )
+          unzip -t release/Doc2FAQ-0.5.0-Windows.zip
+          unzip -p release/Doc2FAQ-0.5.0-Windows.zip Doc2FAQ-0.5.0/doc2faq-0.5.0.jar | cmp - release/doc2faq-0.5.0.jar
+          (
+            cd release
+            sha256sum doc2faq-0.5.0.jar Doc2FAQ-0.5.0-Windows.zip > SHA256SUMS.txt
+            sha256sum -c SHA256SUMS.txt
+          )
+
+      - name: Publish exactly the tested commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.5.0 \
+            --target "$GITHUB_SHA" \
+            --title "Doc2FAQ v0.5.0 — Source & Review" \
+            --notes-file docs/RELEASE-NOTES-0.5.0.md \
+            --latest \
+            release/doc2faq-0.5.0.jar \
+            release/Doc2FAQ-0.5.0-Windows.zip \
+            release/SHA256SUMS.txt
