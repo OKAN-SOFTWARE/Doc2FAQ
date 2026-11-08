@@ -45,3 +45,21 @@ jobs:
           test -f website-dist/demo/index.html
           test -f website-dist/demo/retro.css
           node scripts/verify-website-build.mjs
+
+  # The main-branch ruleset requires a check named "build-and-test".
+  # Keep that stable status only after every Java matrix job succeeds.
+  required-status:
+    name: build-and-test
+    runs-on: ubuntu-24.04
+    needs: [build-and-test]
+    if: ${{ always() }}
+    steps:
+      - name: Require all Java compatibility jobs to pass
+        env:
+          MATRIX_RESULT: ${{ needs['build-and-test'].result }}
+        run: |
+          if [ "$MATRIX_RESULT" != "success" ]; then
+            echo "Java 21–26 compatibility checks did not all pass: $MATRIX_RESULT"
+            exit 1
+          fi
+          echo "All Java 21–26 compatibility checks passed."
